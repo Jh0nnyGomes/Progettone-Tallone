@@ -1,0 +1,27 @@
+*{
+    box-sizing: border-box;
+}
+
+.login_container {
+    background-color: #2c2c2c;
+    border-radius: 5px;
+    margin-left: 20%;
+    margin-right: 20%;
+    margin-top: 15%;
+    margin-bottom: 15%;
+    width: 60%;
+    height: 60%;
+}
+
+.login{
+    margin-top: 15%;
+    margin-left: 35%;
+    margin-right: 35%;
+    width: 30%;
+    height: 5%;
+}
+
+.textbox[type=text] {
+    border: 2px solid #e5e4e4;
+	border-radius: 2px;
+}
