@@ -24,62 +24,6 @@ Class DbHandler {
     }
   }
 
-/*ROBA
-public function __construct(){
-  $a = func_get_args();
-  $i = func_num_args();
-  if (method_exists($this,$f='__construct'.$i))
-      call_user_func_array(array($this,$f),$a);
-}  //si collega al db e ritorna l'oggetto di connessione
-  public function setNewConnection(){
-    try {
-      $this->conn = new PDO("mysql:host=$this->servername;dbname=$this->dbName", $tis->username, $this->password);
-      $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-    catch(PDOException $e) {
-      echo "Connection failed: " . $e->getMessage();
-    }
-  }
-  function __construct5($servername, $port, $username, $password, $dbName){
-    $this->servername = $servername;
-    $this->port = $port;
-    $this->username = $username;
-    $this->password = $password;
-    $this->dbName = $dbName;
-    $this->newConnection($servername, $dbName, $username, $password, $port);
-  }
-
-  public getters&setters
-  public function __get($property) {
-    if (property_exists($this, $property)) {
-      return $this->$property;
-    }
-  }
-
-  public function __set($property, $value) {
-    if (property_exists($this, $property)) {
-      $this->$property = $value;
-    }
-  }
-
-
-  //overload
-  public function __call($method, $arguments) {
-      switch($method){
-        case 'newConnection':
-          if(count($arguments) == 0)
-             return call_user_func_array(array($this,'newConnection0'), $arguments);
-          else if(count($arguments) == 5)
-             return call_user_func_array(array($this,'newConnection5'), $arguments);
-        }
-   }
-
-  //si collega al db e integra l'oggetto di connessione nell'oggetto
-  public function newConnection0(){
-    if (!isset($this->conn))
-      $this->newConnection($this->servername, $this->dbName, $this->username, $this->password, $this->port);
-  }*/
-
   public function countRows($tabName, $filter){
     $sth = $this->query("SELECT count(*) FROM ".$tabName." ".$filter);
     return $sth->fetchColumn();
@@ -120,35 +64,40 @@ Class DataViewHandler extends DbHandler{
   private $x_pag;
   private $all_pages;
   private $all_rows;
-  private $search;
-
-  private $tabPersonale;
-  private $tabFormatori;
-  private $tabSedi;
-  private $tabCorsi;
-  private $tabCorsi_Formatore;
-  private $tabCorsi_Personale;
 
   function __construct(){
     parent::__construct();
-    $this->tabPersonale = "personale";
-    $this->tabFormatori = "formatori";
-    $this->tabSedi = "sedi";
-    $this->tabCorsi = "corsi";
-    $this->tabCorsi_Formatore = "corsi_formatori";
-    $this->tabCorsi_Personale = "corsi_personale";
-    $this->setAll($_GET['src']);
-  }
-
-  private function buildQuery($searchText){
-    // TODO: query che preleva dati da tutte le tabelle
-  }
-
-  private function setAll($search){
-    $this->search = $search;
-    $this->all_rows = $this->countRows($this->tabName, ' WHERE identifier LIKE "%'.$this->search.'%"');//TODO implementare buildQuery
+    $search = $this->getSearchedText();
+    $this->all_rows = $this->query($this->countQuery($search))->fetchColumn();
     $this->x_pag = $this->getRecordPerPag();
     $this->all_pages = ceil($this->all_rows / $this->x_pag);
+    //DEBUG echo "all_rows:".$this->all_rows." x_pag:".$this->x_pag."all_pages:".$this->all_pages;
+  }
+
+  public function buildQuery($searchText){
+    $sql = "SELECT corsisicurezzadb.personale.Cognome, corsisicurezzadb.personale.Nome, corsisicurezzadb.personale.CF, corsisicurezzadb.corsi_personale.Id_Corso, corsisicurezzadb.corsi_personale.Ore, corsisicurezzadb.corsi_personale.Mod1, corsisicurezzadb.corsi_personale.Mod2, corsisicurezzadb.corsi_personale.Mod3, corsisicurezzadb.corsi_personale.Aggiornamento".
+    " from corsi_personale, personale".
+    " where corsisicurezzadb.corsi_personale.Id_Personale = corsisicurezzadb.personale.Id".
+    " and ( personale.CF LIKE '%$searchText%'".
+    " or personale.Cognome LIKE '%$searchText%'".
+    " or personale.Nome LIKE '%$searchText%'".
+    " or corsi_personale.Id_Corso LIKE '%$searchText%' )";
+    return $sql;
+  }
+
+  public function countQuery($searchText){
+    $sql = "SELECT count(corsisicurezzadb.personale.Id)".
+    " from corsi_personale, personale".
+    " where corsisicurezzadb.corsi_personale.Id_Personale = corsisicurezzadb.personale.Id".
+    " and ( personale.CF LIKE '%$searchText%'".
+    " or personale.Cognome LIKE '%$searchText%'".
+    " or personale.Nome LIKE '%$searchText%'".
+    " or corsi_personale.Id_Corso LIKE '%$searchText%' )";
+    return $sql;
+  }
+
+  public function getSearchedText(){
+    return $_GET['src'];
   }
 
   public function getPag(){
@@ -159,25 +108,24 @@ Class DataViewHandler extends DbHandler{
   }
 
   public function getRecordPerPag(){
-    $x_pag = isset($_GET['rpp']) ? $_GET['rpp'] : 10;
+    $x_pag = isset($_GET['rpp']) ? $_GET['rpp'] : 20;
     if (!$x_pag || !is_numeric($x_pag) || $x_pag <= 0)
-      $x_pag = 10;
+      $x_pag = 20;
     return $x_pag;
   }
 
   public function search(){
-    //echo "src:".$this->getSearchText()." allR:".$this->all_rows." allP:".$this->all_pages." xP:".$this->x_pag;
     $first = ($this->getPag()-1) * $this->x_pag;
-    $sth = $this->query('SELECT * FROM '.$this->tabName.' WHERE identifier LIKE "%'.$this->search.'%" LIMIT '.$first.', '.$this->x_pag);//TODO implementare buildQuery
+    $sth = $this->query($this->buildQuery($this->getSearchedText()).' LIMIT '.$first.', '.$this->x_pag);
     $tab = [];
     while($r = $sth->fetch(PDO::FETCH_ASSOC))
       array_push($tab, $r);
     return $tab;
   }
+
   //ritorna una array associativo con le pagine caricabili (indici e nomi relativi in values & keys)
   public function getPagLinks(){
     $list = array();
-    //$this->filter();
     $pag = $this->getPag();
     //pagina precedente
     if($this->all_pages > 1){
@@ -197,11 +145,10 @@ Class DataViewHandler extends DbHandler{
       $list["..."] = $pag +5;
 
     //passa il testo cercato
-    $list["src"] = $this->search;
+    $list["src"] = $this->getSearchedText();
     return $list;
     }
   }
-
 }
 
 
@@ -233,50 +180,14 @@ Class UserHandler extends DbHandler{
     $qPsw = $this->query($query);
     if ($qPsw->rowCount() < 1)
       return 0; //"username o email non trovato"
-    if ($psw == $qPsw->fetchColumn())
-      return 1; //"Loggato!"
+    if ($psw == $qPsw->fetchColumn()){
+      session_start();
+      $_SESSION["username"] = $usr;
+      $_SESSION["logged"] = 1;
+      return 1; //"Loggato!" e aggiunge alla sessione
+    }
     else
       return 2; //"password errata"
   }
-/*
-  public function SignIn($user, $psw, $email){
-    //controllo caratteri speciali
-    $all = array($user, $psw, $email);
-    foreach ($all as $key => $value)
-      if (
-        strpos($value, ' ') === true ||
-        strpos($value, '$') === true ||
-        strpos($value, '£') === true ||
-        strpos($value, '%') === true ||
-        strpos($value, '&') === true ||
-        strpos($value, '"') === true ||
-        strpos($value, "'") === true ||
-        strpos($value, '?') === true ||
-        strpos($value, '!') === true ||
-        strpos($value, '@') === true ||
-        strpos($value, ':') === true ||
-        strpos($value, '.') === true ||
-        strpos($value, ',') === true ||
-        strpos($value, ';') === true
-      ) return 0;//"caratteri non validi";
-
-    //controllo email
-    if (strpos($email, '@') === false)
-      return 2;//"email non valida";
-
-    //controllo psw
-    if (strlen($psw) < 6)
-      return 1;//"password troppo corta";
-
-    $column_value = array(
-      $this->usrField => $user,
-      $this->pswField => $psw,
-      $this->emailField => $email
-    );
-    if($this->insert($this->tabName, $column_value))
-      return 4;//"registrazione completata";
-    else
-      return 3;//"errore";
-  }*/
 }
 ?>

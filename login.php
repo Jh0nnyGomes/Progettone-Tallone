@@ -13,12 +13,13 @@
                     <form action="LoginResponse.php" method="post">
                         <input type="text" name="username" placeholder="Username" class="login textbox">
                         <input type="password" name="psw" placeholder="Password" class="login textbox">
-                        <input type="button" name="submit" value="Accedi" class="login btnlogin">
+                        <input type="submit" name="submit" value="Accedi" class="login btnlogin">
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
 <?php
 if (isset($_POST["alert"])) {
   $message;
@@ -35,8 +36,12 @@ if (isset($_POST["alert"])) {
   }
   echo "<script type='text/javascript'>alert('$message');</script>";
   //dopo la convalida dell'alert reindirizza ai dati
-  if ($_POST['alert'] == 2)
-    header("Location:dbView.php");
+  if ($_POST['alert'] == 1){
+    ob_start();
+    header("Location:DataView.php");
+    ob_end_flush();
+    die();
+  }
 }
 ?>
 </body>
