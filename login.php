@@ -7,7 +7,7 @@
 
 <body>
     <div class="row">
-        <div class="col-12 logincontainer">
+        <div class="col-12 container">
             <div class="loginbox">
                 <div class="logincontent">
                     <form action="LoginResponse.php" method="post">

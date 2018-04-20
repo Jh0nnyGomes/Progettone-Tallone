@@ -66,8 +66,8 @@ body {
 }
 
 
-.logincontainer {
-    background-color: #4e4e4e;
+.container {
+    background: linear-gradient(#8ec4ff,#ffffff);
     height: 100%;
 }
 
@@ -83,7 +83,7 @@ body {
     position: relative;
     width: 100%;
     height: 75%;
-    background-color: #343434;
+    background-color: #d2f2ff;
     border-radius: 5px;
     border: 2px solid rgba(206, 206, 206, 0.45);
 }
@@ -108,7 +108,7 @@ body {
 }
 
 .textbox[type=text] {
-    border: 2px solid #e5e4e4;
+    border: 2px solid #b3c7ff;
     border-radius: 20px;
     font-size: 20px;
 }
@@ -124,7 +124,7 @@ body {
 }
 
 .textbox[type=password] {
-    border: 2px solid #e5e4e4;
+    border: 2px solid #b3c7ff;
     border-radius: 20px;
     font-size: 20px;
 }
@@ -139,13 +139,13 @@ body {
     outline: none;
 }
 
-.btnlogin[type=button] {
-    border: 2px solid #e5e4e4;
+.btnlogin[type=submit] {
+    border: 2px solid #b3c7ff;
     border-radius: 20px;
     font-size: 20px;
 }
 
-.btnlogin[type=button]:hover {
+.btnlogin[type=submit]:hover {
     transition: 0.3s;
     box-shadow: 0 12px 16px 0 rgba(171, 171, 171, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
     outline: none;

@@ -1,11 +1,17 @@
 <html>
-  <head></head>
-  <body>
-    <form action="DataView.php" method="get">
-      <input type="text" name="src" placeholder="Search" value = "<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>"/>
-      <input type="submit" value="cerca"/>
-    </form>
-    <?php
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+    <div class="col-12 container">
+        <form action="DataView.php" method="get">
+            <input type="text" name="src" placeholder="Search" value="<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>" />
+            <input type="submit" value="cerca" />
+        </form>
+        <?php
       //Stampa la tabella
       require_once('dbHandler.php');
       $dv_handler = new DataViewHandler();
@@ -65,5 +71,7 @@
         }
 
       ?>
-    </body>
+    </div>
+</body>
+
 </html>

@@ -12,7 +12,7 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    $this->password = 'root';
+    $this->password = 'mysql';
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
