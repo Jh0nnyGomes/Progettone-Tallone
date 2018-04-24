@@ -4,14 +4,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
-
 <body>
-    <div class="col-12 container">
-        <form action="DataView.php" method="get">
-            <input type="text" name="src" placeholder="Search" value="<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>" />
-            <input type="submit" value="cerca" />
-        </form>
-        <?php
+  <nav>
+    <div>
+      <!-- DEBUG Home -->
+      <a href="index.html">Index</a>
+      <!-- TODO Inserisci -->
+      <a href="" style="margin-top:2%;margin-left: 84%;">Aggiungi</a>
+      <!-- Logout -->
+      <a href="LogoutResponse.php" style="margin-top:15%;">Logout</a>
+    </div>
+  </nav>
+
+  <div class="col-12 container">
+      <form action="DataView.php" method="get">
+          <input type="text" name="src" placeholder="Search" value="<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>" />
+          <input type="submit" value="cerca" />
+      </form>
+      <?php
       //Stampa la tabella
       require_once('dbHandler.php');
       $dv_handler = new DataViewHandler();
@@ -32,7 +42,12 @@
               "<td>".$record['Cognome']."</td>".
               "<td>".$record['Nome']."</td>".
               "<td>".$record['CF']."</td>".
-              "<td>".$record['Id_Corso']."</td>".
+              "<td>".
+                "<form action='DataView.php' method='post'>".
+                  $record['Id_Corso'].
+                  "<input type='hidden'"//TODO finire
+                "</form>".
+              "</td>".
               "<td>".$record['Ore']."</td>".
               "<td>".$record['Mod1']."</td>".
               "<td>".$record['Mod2']."</td>".
@@ -69,9 +84,8 @@
 
           echo $echo;
         }
-
-      ?>
-    </div>
+    ?>
+  </div>
 </body>
 
 </html>

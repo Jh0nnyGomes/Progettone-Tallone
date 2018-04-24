@@ -12,7 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    $this->password = 'mysql';
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -58,6 +59,10 @@ Class DbHandler {
       return false;
     }
   }
+}
+
+Class DetailsHandler extends DbHandler{
+  //// TODO: finire
 }
 
 Class DataViewHandler extends DbHandler{
@@ -188,6 +193,12 @@ Class UserHandler extends DbHandler{
     }
     else
       return 2; //"password errata"
+  }
+
+  public function logout(){
+    //TODO log
+    session_start();
+    session_unset();
   }
 }
 ?>
