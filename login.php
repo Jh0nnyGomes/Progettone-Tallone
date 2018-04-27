@@ -20,36 +20,38 @@
         </div>
     </div>
 
-<?php
-session_start();
-if (isset($_SESSION["logged"]) && $_SESSION["logged"] == 1)
-  goToDataView();
+    <?php
+        session_start();
+        if (isset($_SESSION["logged"]) && $_SESSION["logged"] == 1)
+          goToDataView();
 
-if (isset($_POST["alert"])) {
-  $message;
-  switch ($_POST["alert"]) {
-    case 0:
-      $message = "username non trovato";
-      break;
-    case 1:
-      $message = "Login effettuato con successo";
-      break;
-    case 2:
-      $message = "password errata";
-      break;
-  }
-  echo "<script type='text/javascript'>alert('$message');</script>";
-  //dopo la convalida dell'alert reindirizza ai dati
-  if ($_POST['alert'] == 1)
-    goToDataView();
-}
+        if (isset($_POST["alert"])) {
+          $message;
+          switch ($_POST["alert"]) {
+            case 0:
+              $message = "username non trovato";
+              break;
+            case 1:
+              $message = "Login effettuato con successo";
+              break;
+            case 2:
+              $message = "password errata";
+              break;
+          }
+          echo "<script type='text/javascript'>alert('$message');</script>";
+          //dopo la convalida dell'alert reindirizza ai dati
+          if ($_POST['alert'] == 1)
+            goToDataView();
+        }
 
-function goToDataView(){
-  ob_start();
-  header("Location:DataView.php");
-  ob_end_flush();
-  die();
-}
-?>
+        function goToDataView(){
+          ob_start();
+          header("Location:DataView.php");
+          ob_end_flush();
+          die();
+        }
+    ?>
+    
 </body>
+
 </html>

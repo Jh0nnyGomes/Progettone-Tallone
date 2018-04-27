@@ -4,6 +4,7 @@
 
 body {
     margin: 0;
+    background: linear-gradient(to top,#8ec4ff,#ffffff);
 }
 
 .col-1 {
@@ -67,7 +68,6 @@ body {
 
 
 .container {
-    background: linear-gradient(#8ec4ff,#ffffff);
     height: 100%;
 }
 
@@ -150,4 +150,140 @@ body {
     box-shadow: 0 12px 16px 0 rgba(171, 171, 171, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
     outline: none;
     cursor: pointer;
+}
+
+.navbar{
+    display: block;
+    width: 100%;
+}
+
+.navbar-list{
+    list-style-type: none;
+    display: block;
+    margin-top: 0;
+    /*margin-left: 200px;*/
+    padding: 0;
+    overflow: hidden;
+    background: #e0e0e0;
+    color: black;
+    height: 6%;
+    /*border-radius: 25px;*/
+    width: 90%;
+    float: left;
+    text-align: center;
+}
+
+.navbar-list li{
+    float: inherit;
+    border-right: 2px solid #8b8b8b;
+    height: 100%;
+    text-align: center;
+    width: auto;
+    padding: 15px;
+}
+
+.navbar-list li:last-child{
+    border-right: none;
+}
+
+.navbar-list li a{
+    color: black;
+    text-align: center;
+    padding: 15px;
+    text-decoration: none;
+}
+
+.navbar-list .searchbox[type=text]{
+    width: 70%;
+    margin: 15px;
+}
+
+.logout-bar{
+    list-style-type: none;
+    display: inline-block;
+    margin-top: 0;
+    /*margin-left: 200px;*/
+    padding: 0;
+    overflow: hidden;
+    background: #e0e0e0;
+    color: black;
+    height: 6%;
+    /*border-radius: 25px;*/
+    width: auto;
+    float: right;
+    text-align: center;
+}
+
+.logout-bar li{
+    float: inherit;
+    border-right: 2px solid #8b8b8b;
+    height: 50px;
+    text-align: center;
+    width: auto;
+    padding: 15px;
+}
+
+.logout-bar li:last-child{
+    border-right: none;
+}
+
+.logout-bar li a{
+    color: black;
+    text-align: center;
+    padding: 15;
+    text-decoration: none;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #cccccc;
+    color: black;
+}
+
+.table thead {
+    background: #8ec4ff;
+    border-bottom: 2px solid #dedddd;
+}
+
+.table th[scope=col] {
+    border-right: 1px solid #dedddd;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table th[scope=col]:last-child {
+    border-right: none;
+}
+
+.table tr {
+    border-bottom: 2px solid #dedddd;
+}
+
+.table tr:nth-child(even) {
+    background: #a3a3a3;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background: #9cd5ff;
+}
+
+.table td {
+    padding: 8px;
+    border-left: 1px solid #dedddd;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table td:first-child{
+    border-left: none;
+}
+
+@media only screen and (max-width: 1259px){
+    
 }
