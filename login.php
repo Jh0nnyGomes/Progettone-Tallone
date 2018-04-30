@@ -20,38 +20,24 @@
         </div>
     </div>
 
-    <?php
-        session_start();
-        if (isset($_SESSION["logged"]) && $_SESSION["logged"] == 1)
-          goToDataView();
+<?php
+require_once("dbHandler.php");
+require_once("Redirect.php");
 
-        if (isset($_POST["alert"])) {
-          $message;
-          switch ($_POST["alert"]) {
-            case 0:
-              $message = "username non trovato";
-              break;
-            case 1:
-              $message = "Login effettuato con successo";
-              break;
-            case 2:
-              $message = "password errata";
-              break;
-          }
-          echo "<script type='text/javascript'>alert('$message');</script>";
-          //dopo la convalida dell'alert reindirizza ai dati
-          if ($_POST['alert'] == 1)
-            goToDataView();
-        }
+$usrHandler = new UserHandler();
 
-        function goToDataView(){
-          ob_start();
-          header("Location:DataView.php");
-          ob_end_flush();
-          die();
-        }
-    ?>
-    
+if ($usrHandler->isLogged())
+  goToDataView();
+
+$result = isset($_POST["response"]) ? unserialize($_POST["response"]) : null;//riconverte in array l'esito
+echo $result[1];
+if (isset($result)) {
+  echo "<script type='text/javascript'>alert('".$result[1]."');</script>";
+  //dopo la convalida dell'alert reindirizza ai dati
+  /*if ($result[0] == 1)
+    goToDataView();*/
+}
+else "<script type='text/javascript'>alert('Errore: impossibile eseguire il login');</script>"; ;
+?>
 </body>
-
 </html>

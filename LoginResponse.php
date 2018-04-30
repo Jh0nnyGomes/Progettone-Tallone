@@ -1,14 +1,12 @@
-
 <form id="F" action="login.php" method="post">
   <?php
   $usr = $_POST["username"];
-  $psw = md5($_POST["psw"]);
+  $psw = $_POST["psw"];
 
-  include("dbHandler.php");
+  require_once("dbHandler.php");
   $u = new UserHandler();
   $return = $u->login($usr, $psw);
-
-  echo "<input type='hidden' name='alert' value='".$return."'></form>";
+  echo "<input type='hidden' name='response' value='".serialize($return)."'></form>";
   ?>
 </form>
 

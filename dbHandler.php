@@ -12,8 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    //$this->password = 'root';//julian DEBUG
-    $this->password = 'mysql';//jhonny DEBUG
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -62,7 +62,33 @@ Class DbHandler {
 }
 
 Class DetailsHandler extends DbHandler{
-  //// TODO: finire
+  function __construct(){
+    parent::__construct();
+  }
+
+  function getCorsoDetails($corsoId){
+    //PRELEVA I NOMI DEI FORMATORI
+    $result = [];
+    $nfQuery = $this->query(
+      "SELECT formatori.Nome
+      from corsisicurezzadb.formatori join corsisicurezzadb.corsi_formatori on formatori.Id = corsi_formatori.Id_Formatore
+      where corsi_formatori.Id_Corso = '$corsoId'"
+      );
+    $sede = $this->query(
+      "SELECT distinct sedi.Nome
+      from corsisicurezzadb.sedi join corsisicurezzadb.corsi_personale on sedi.Id = corsi_personale.Id_Sede
+      where corsi_personale.Id_Corso = '$corsoId'"
+      )->fetchColumn();
+
+    $nomiFormatori = [];
+    while ($n = $nfQuery->fetch())
+      array_push($nomiFormatori, $n[0]);
+
+    $result["Formatori"] = $nomiFormatori;
+    $result["Sede"] = $sede;
+
+    return $result;
+  }
 }
 
 Class DataViewHandler extends DbHandler{
@@ -86,7 +112,8 @@ Class DataViewHandler extends DbHandler{
     " and ( personale.CF LIKE '%$searchText%'".
     " or personale.Cognome LIKE '%$searchText%'".
     " or personale.Nome LIKE '%$searchText%'".
-    " or corsi_personale.Id_Corso LIKE '%$searchText%' )";
+    " or corsi_personale.Id_Corso LIKE '%$searchText%' )".
+    " order by corsi_personale.Id_Corso";
     return $sql;
   }
 
@@ -175,30 +202,82 @@ Class UserHandler extends DbHandler{
     $this->emailField = "email";
   }
 
+  public function sessionSafeStart(){
+    if (session_status() == PHP_SESSION_NONE)
+      session_start();
+  }
+
+  public function sessionSafeUnset(){
+    if (session_status() == PHP_SESSION_ACTIVE)
+      session_unset();
+  }
+
+  // NOTE:usa l'md5
   public function login($user, $psw){
     //preleva la psw dove l'email o lo username sono uguali a quello inserito
     $query;
     if (strpos($user, '@'))
-      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
+      $query = "select ".$this->pswField.", Accesso from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
     else
-      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
+      $query = "select ".$this->pswField.", Accesso from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
+
     $qPsw = $this->query($query);
+
+    //"username o email non trovato"
     if ($qPsw->rowCount() < 1)
-      return 0; //"username o email non trovato"
-    if ($psw == $qPsw->fetchColumn()){
-      session_start();
+      return $this->codifyLoginResult(0);
+
+    //"Loggato!" e aggiunge alla sessione
+    if (md5($psw) == $qPsw->fetchAll()[0][0]){
+      $this->sessionSafeStart();
       $_SESSION["username"] = $usr;
       $_SESSION["logged"] = 1;
-      return 1; //"Loggato!" e aggiunge alla sessione
+      $_SESSION["acLevel"] = $qPsw->fetchAll()[0][1];
+      return $this->codifyLoginResult(1);
     }
-    else
-      return 2; //"password errata"
+
+    //"password errata"
+    else return $this->codifyLoginResult(2);
+  }
+
+  //interpreta il risultato del login
+  private function codifyLoginResult($result){
+    $resultObj = [];
+    switch ($result) {
+      case 0:
+        array_push($resultObj, 0);
+        array_push($resultObj, "Username o indirizzo email non trovato");
+        break;
+
+      case 1:
+        array_push($resultObj, 1);
+        array_push($resultObj, "Login effettuato con successo");
+        break;
+
+      case 2:
+        array_push($resultObj, 2);
+        array_push($resultObj, "Password errata");
+        break;
+    }
+    return $resultObj;
   }
 
   public function logout(){
-    //TODO log
-    session_start();
-    session_unset();
+    //TODO Log
+    $this->sessionSafeStart();
+    $this->sessionSafeUnset();
+  }
+
+  public function isLogged(){
+    $this->sessionSafeStart();
+    return $_SESSION["logged"] == 1;
+  }
+
+  public function verifySession(){
+    if(!$this->isLogged()){
+      require_once("Redirect.php");
+      goToLogin();
+    }
   }
 }
 ?>

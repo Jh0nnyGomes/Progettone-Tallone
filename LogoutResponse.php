@@ -1,9 +1,7 @@
   <?php
-  include("dbHandler.php");
+  require_once("dbHandler.php");
+  require_once("Redirect.php");
   $u = new UserHandler();
   $u->logout();
-  ob_start();
-  header("Location:login.php");
-  ob_end_flush();
-  die();
+  goToLogin();
   ?>
