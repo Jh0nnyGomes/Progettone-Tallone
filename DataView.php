@@ -1,23 +1,35 @@
 <html>
-  <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" type="text/css" href="css/style.css">
-  </head>
-  <body>
-    <nav>
-      <div>
-        <!-- Inserimento dati -->
-        <a href="Insert.php" style="margin-top:2%;margin-left: 84%;">Aggiungi</a>
-        <!-- Logout -->
-        <a href="LogoutResponse.php" style="margin-top:15%;">Logout</a>
-      </div>
-    </nav>
 
-    <div class="col-12 container">
-        <form action="DataView.php" method="get">
-            <input type="text" name="src" placeholder="Search" value="<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>" />
-            <input type="submit" value="cerca" />
-        </form>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+    <div class="col-12">
+        <div class="navbar">
+            <ul class="navbar-list">
+                <!-- DEBUG Home -->
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+                <!-- TODO Inserisci -->
+                <li>
+                    <a href="">Aggiungi</a>
+                </li>
+                <!-- SearchBar -->
+                <form action="DataView.php" method="get">
+                    <input type="text" name="src" placeholder="Cerca" value="<?php echo (isset($_GET['src']))?$_GET['src']:''; ?>" class="searchbox" />
+                    <input type="submit" value="Cerca" class="searchbtn" />
+                </form>
+            </ul>
+            <ul class="logout-bar">
+                <!-- Logout -->
+                <li>
+                    <a href="LogoutResponse.php">Logout</a>
+                </li>
+            </ul>
+        </div>
         <?php
         //verifica il login
         require_once('dbHandler.php');
@@ -29,18 +41,21 @@
         $pag = $dv_handler->getPag();
         $src = $dv_handler->getSearchedText();
 
-        echo "<table class='table table-striped table-dark'>
-              <tr>
-                <th>Cognome</th>
-                <th>Nome</th>
-                <th>CF</th>
-                <th>Corso</th>
-                <th>Ore</th>
-                <th>Mod1</th>
-                <th>Mod2</th>
-                <th>Mod3</th>
-                <th>Aggiornamento</th>
-              </tr>";
+        echo "<table class='table'>".
+            "<thead>".
+                "<tr>".
+                  "<th scope='col'>Cognome</th>".
+                  "<th scope='col'>Nome</th>".
+                  "<th scope='col'>CF</th>".
+                  "<th scope='col'>Corso</th>".
+                  "<th scope='col'>Ore</th>".
+                  "<th scope='col'>Mod1</th>".
+                  "<th scope='col'>Mod2</th>".
+                  "<th scope='col'>Mod3</th>".
+                  "<th scope='col'>Aggiornamento</th>".
+                "</tr>".
+            "</thead>".
+            "<tbody>";
               $i = 0;
         foreach ($dv_handler->search() as $record) {
           $i = $i + 1;
@@ -64,7 +79,8 @@
                 <td>".$record['Aggiornamento']."</td>
               </tr>";
         }
-        echo "</table>";
+        echo "</tbody>".
+        "</table>";
 
         //Stampa le pagine
         $l = $dv_handler->getPagLinks();
@@ -72,33 +88,35 @@
             $echo;
 
             if(isset($l['src']))  //Setta la prima pagina
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['src'] .'&src='.$l["src"]. "\">First</a><br>";
+              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['src'] .'&src='.$l["src"]. "\">First</a>";
 
             if(isset($l['last'])) //Setta la pagina precedente
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['last'] .'&src='.$l["src"]. "\">Last</a><br>";
+              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['last'] .'&src='.$l["src"]. "\">Last</a>";
 
             if(isset($l['next'])) //Setta la pagina successiva
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next</a><br>";
+              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next</a>";
 
             //setta gli indici delle 5 pagine succesive
             foreach ($dv_handler->getPagLinks() as $key => $value) {
               if ($key != 'src' && $key != 'last' && $key != 'next' && $key != '...'){
-                $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a><br>";
+                $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
                 unset($value);
               }
             }
 
             if(isset($l['...'])) //Setta [...]
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a><br>";
+              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
 
             echo $echo;
           }
       ?>
-      <script>
-        function submit(id){
-          document.getElementById(id).submit();
-        }
-      </script>
+            <script>
+                function submit(id) {
+                    document.getElementById(id).submit();
+                }
+
+            </script>
     </div>
-  </body>
+</body>
+
 </html>

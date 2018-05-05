@@ -12,8 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    $this->password = 'root';//julian DEBUG
-    //$this->password = 'mysql';//jhonny DEBUG
+    //$this->password = 'root';//julian DEBUG
+    $this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -217,9 +217,9 @@ Class UserHandler extends DbHandler{
     //preleva la psw dove l'email o lo username sono uguali a quello inserito
     $query;
     if (strpos($user, '@'))
-      $query = "select ".$this->pswField.", Accesso from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
+      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
     else
-      $query = "select ".$this->pswField.", Accesso from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
+      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
 
     $qPsw = $this->query($query);
 
