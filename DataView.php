@@ -81,34 +81,40 @@
         }
         echo "</tbody>".
         "</table>";
-
+        
+        echo "<div class='pagcontainer'>";
         //Stampa le pagine
         $l = $dv_handler->getPagLinks();
         if ($l != null){
             $echo;
 
             if(isset($l['src']))  //Setta la prima pagina
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['src'] .'&src='.$l["src"]. "\">First</a>";
-
+              $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['src'] .'&src='.$l["src"]. "\">First</a>";
+            
             if(isset($l['last'])) //Setta la pagina precedente
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['last'] .'&src='.$l["src"]. "\">Last</a>";
-
-            if(isset($l['next'])) //Setta la pagina successiva
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next</a>";
+              $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['last'] .'&src='.$l["src"]. "\">Back</a>";
 
             //setta gli indici delle 5 pagine succesive
             foreach ($dv_handler->getPagLinks() as $key => $value) {
               if ($key != 'src' && $key != 'last' && $key != 'next' && $key != '...'){
-                $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
+                $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
                 unset($value);
               }
             }
-
+            
             if(isset($l['...'])) //Setta [...]
-              $echo = $echo."<a class = 'page-link'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
+              $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
+            
+            if(isset($l['next'])) //Setta la pagina successiva
+              $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next</a>";
+            
+            
+
 
             echo $echo;
           }
+        
+        echo "</div>";
       ?>
             <script>
                 function submit(id) {

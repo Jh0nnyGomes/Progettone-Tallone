@@ -179,7 +179,7 @@ body {
     height: 100%;
     text-align: center;
     width: auto;
-    padding: 15px;
+    padding: 18px;
 }
 
 .navbar-list li:last-child{
@@ -220,7 +220,7 @@ body {
     height: 50px;
     text-align: center;
     width: auto;
-    padding: 15px;
+    padding: 18px;
 }
 
 .logout-bar li:last-child{
@@ -282,6 +282,30 @@ body {
 
 .table td:first-child{
     border-left: none;
+}
+
+.pagcontainer{
+    margin-left: 33%;
+    margin-top: 1%;
+}
+
+.page-btn{
+    text-decoration: none;
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    color: black;
+    background-color: #e0e0e0;
+    text-align: center;
+    margin-left: 2%;
+    width: 5.5%;
+    height: 2%;
+    padding: 0.1%;
+
+}
+
+.page-btn:first-child{
+    margin-left: 0;
 }
 
 @media only screen and (max-width: 1259px){
