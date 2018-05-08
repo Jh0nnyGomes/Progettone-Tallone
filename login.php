@@ -33,9 +33,6 @@ $result = isset($_POST["response"]) ? unserialize($_POST["response"]) : null;//r
 echo $result[1];
 if (isset($result)) {
   echo "<script type='text/javascript'>alert('".$result[1]."');</script>";
-  //dopo la convalida dell'alert reindirizza ai dati
-  /*if ($result[0] == 1)
-    goToDataView();*/
 }
 else "<script type='text/javascript'>alert('Errore: impossibile eseguire il login');</script>"; ;
 ?>

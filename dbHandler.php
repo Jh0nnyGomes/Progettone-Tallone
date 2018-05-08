@@ -12,8 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    //$this->password = 'root';//julian DEBUG
-    $this->password = 'mysql';//jhonny DEBUG
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -162,7 +162,7 @@ Class DataViewHandler extends DbHandler{
     //pagina precedente
     if($this->all_pages > 1){
       if ($pag > 1)
-        $list["last"] = $pag -1;
+        $list["prev"] = $pag -1;
     //pagina successiva
     if ($this->all_pages > $pag)
       $list["next"] = $pag +1;
@@ -170,8 +170,8 @@ Class DataViewHandler extends DbHandler{
     $npgs = 5;
     while ($npgs >= $this->all_pages - $pag)
       $npgs--;
-    for ($i = 2; $i <= $npgs; $i++)
-        $list[$i - 1] = $i + $pag;
+    for ($i = 0; $i <= $npgs; $i++)
+        $list[$i] = $i + $pag;
     //5 pagine piu in la
     if ($this->all_pages > $pag + 5)
       $list["..."] = $pag +5;

@@ -4,12 +4,25 @@
       <link rel="stylesheet" type="text/css" href="css/style.css">
   </head>
   <body>
-    <nav>
-      <div>
-        <!-- Logout -->
-        <a href="LogoutResponse.php" style="margin-top:15%;">Logout</a>
-      </div>
-    </nav>
+    <div class="col-12">
+        <div class="navbar">
+            <ul class="navbar-list">
+                <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+                <!-- TODO Inserisci -->
+                <li>
+                    <a href="">Aggiungi</a>
+                </li>
+            </ul>
+            <ul class="logout-bar">
+                <!-- Logout -->
+                <li>
+                    <a href="LogoutResponse.php">Logout</a>
+                </li>
+            </ul>
+        </div>
 
     <div class="col-12 container">
         <?php
