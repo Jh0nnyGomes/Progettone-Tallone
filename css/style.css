@@ -298,7 +298,7 @@ body {
     background-color: #e0e0e0;
     text-align: center;
     margin-left: 2%;
-    width: 5.5%;
+    width: 3%;
     height: 2%;
     padding: 0.1%;
 
@@ -306,6 +306,10 @@ body {
 
 .page-btn:first-child{
     margin-left: 0;
+}
+
+.arrows{
+    width: 10.5%;
 }
 
 @media only screen and (max-width: 1259px){
