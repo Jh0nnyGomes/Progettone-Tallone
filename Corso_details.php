@@ -11,10 +11,18 @@
                 <li>
                     <a href="index.html">Home</a>
                 </li>
-                <!-- TODO Inserisci -->
-                <li>
-                    <a href="">Aggiungi</a>
-                </li>
+                <!-- inserimento per moderator ed administrator -->
+                <!-- inserimento per moderator ed administrator -->
+                <?php
+                require_once('dbHandler.php');
+                $u = new UserHandler();
+                $lv = $u->getAcLv();
+                //Moderator & admin
+                if ($lv > 0)
+                  echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
+                if ($lv > 1)
+                  echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+                ?>
             </ul>
             <ul class="logout-bar">
                 <!-- Logout -->

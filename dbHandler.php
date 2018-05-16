@@ -12,8 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    //$this->password = 'root';//julian DEBUG
-    $this->password = 'mysql';//jhonny DEBUG
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -189,9 +189,7 @@ Class UserHandler extends DbHandler{
   public $pswField;
   public $usrField;
   public $emailField;
-  /*
-  public $user;
-  public $email;*/
+  public $accessLvField;
 
   function __construct(){
     parent::__construct();
@@ -200,6 +198,7 @@ Class UserHandler extends DbHandler{
     $this->pswField = "Password";
     $this->usrField = "Username";
     $this->emailField = "email";
+    $this->accessLvField = "Accesso";
   }
 
   public function sessionSafeStart(){
@@ -217,9 +216,9 @@ Class UserHandler extends DbHandler{
     //preleva la psw dove l'email o lo username sono uguali a quello inserito
     $query;
     if (strpos($user, '@'))
-      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
+      $query = "select ".$this->pswField.", ".$this->accessLvField." from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
     else
-      $query = "select ".$this->pswField." from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
+      $query = "select ".$this->pswField.", ".$this->accessLvField." from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
 
     $qPsw = $this->query($query);
 
@@ -228,11 +227,12 @@ Class UserHandler extends DbHandler{
       return $this->codifyLoginResult(0);
 
     //"Loggato!" e aggiunge alla sessione
-    if (md5($psw) == $qPsw->fetchAll()[0][0]){
+    $record = $qPsw->fetchAll()[0];
+    if (md5($psw) == $record[0]){
       $this->sessionSafeStart();
       $_SESSION["username"] = $usr;
       $_SESSION["logged"] = 1;
-      $_SESSION["acLevel"] = $qPsw->fetchAll()[0][1];
+      $_SESSION["accessLv"] = $record[1];
       return $this->codifyLoginResult(1);
     }
 
@@ -273,6 +273,11 @@ Class UserHandler extends DbHandler{
     return $_SESSION["logged"] == 1;
   }
 
+  public function getAcLv(){
+    $this->sessionSafeStart();
+    return $_SESSION["accessLv"];
+  }
+
   public function verifySession(){
     if(!$this->isLogged()){
       require_once("Redirect.php");
@@ -280,4 +285,22 @@ Class UserHandler extends DbHandler{
     }
   }
 }
+
+class InsertHandler extends DbHandler
+{
+  public function addPerson($nome, $cognome, $data, $cf, $pNascita, $dateCorso, $idCorso, $ore){
+    //inserimento dati persona
+    $Field_val = ["Cognome"=>$cognome, "Nome"=>$nome, "DataNascita"=>$data, "ComuneNascita"=>$pNascita, "CF"=>$cf];
+    if(!$this->insert("Personale", $Field_val)) return false;
+
+    // TODO:
+    //convalida corso
+    //inserimento ore e date
+  }
+
+  public function addCorso($id, $formatori, $sede){
+    // TODO: 
+  }
+}
+
 ?>
