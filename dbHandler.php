@@ -70,7 +70,7 @@ Class DetailsHandler extends DbHandler{
     //PRELEVA I NOMI DEI FORMATORI
     $result = [];
     $nfQuery = $this->query(
-      "SELECT formatori.Nome
+      "SELECT formatori.Cognome
       from corsisicurezzadb.formatori join corsisicurezzadb.corsi_formatori on formatori.Id = corsi_formatori.Id_Formatore
       where corsi_formatori.Id_Corso = '$corsoId'"
       );
@@ -288,19 +288,157 @@ Class UserHandler extends DbHandler{
 
 class InsertHandler extends DbHandler
 {
-  public function addPerson($nome, $cognome, $data, $cf, $pNascita, $dateCorso, $idCorso, $ore){
+  // TODO: // DEBUG:
+  public function addPerson($nome, $cognome, $data, $cf, $pNascita, $dateCorso, $ore, $idCorso, $sede){
+    $errorCode = ["corso"=>false, "sede"=>false, "dateFormat"=>false, "cf"=>false, "generic"=>false];
+    $interruptFlag = false;
+
+    //convalida cf
+    if (strlen($cf) != 16){
+      $errorCode["cf"] = true;//cf inesatto
+      $interruptFlag = true;
+    }
+
+    //convalida date
+    if (count($dateCorso) != 4) {
+      $errorCode["dateFormat"] = true;
+      $interruptFlag = true;
+    }
+    else{
+      // TODO: controlla formato date aaaa-mm-gg
+    }
+
+    //convalida corso
+    $corso = $this->query("SELECT Id FROM corsi WHERE Id = '".$idCorso."'")->fetchColumn();
+    if (!isset($corso)) {
+      $errorCode["corso"] = true;//corso errato o non trovato
+      $interruptFlag = true;
+    }
+
+    //convalida Sede
+    $idSede = $this->query("SELECT id FROM sedi WHERE Nome = '".$sede."'")->fetchColumn();
+    if (!isset($idSede)) {
+      $errorCode["sede"] = true;//sede errata o non trovata
+      $interruptFlag = true;
+    }
+
+    //controllo parziale 1
+    if($interruptFlag)
+      return $errorCode;
+
     //inserimento dati persona
     $Field_val = ["Cognome"=>$cognome, "Nome"=>$nome, "DataNascita"=>$data, "ComuneNascita"=>$pNascita, "CF"=>$cf];
-    if(!$this->insert("Personale", $Field_val)) return false;
+    if(!$this->insert("Personale", $Field_val)) {
+      $errorCode["generic"] = true;
+      return $errorCode; //controllo parziale 2: impedisce 'inserimento delle date e delle ore'
+    }
 
-    // TODO:
-    //convalida corso
+    $idPersonale = $this->query("SELECT Id FROM personale WHERE CF = '$cf'")->fetchColumn();
+
     //inserimento ore e date
+    $Field_val = [
+      "Id_Sede"=>$idSede,
+      "Id_Personale"=>$idPersonale,
+      "Id_Corso"=>$idCorso,
+      "Ore"=>$ore,
+      "Mod1"=>$dateCorso["Mod1"],
+      "Mod2"=>$dateCorso["Mod2"],
+      "Mod3"=>$dateCorso["Mod3"],
+      "Aggiornamento"=>$dateCorso["Aggiornamento"]
+    ];
+    if(!$this->insert("corsi_personale", $Field_val))
+      $errorCode["generic"] = true;
+
+    return $errorCode;
   }
 
-  public function addCorso($id, $formatori, $sede){
-    // TODO: 
+  public function addCorso($id, $formatori){
+    $errorCode = ["formatori"=>false, "corso"=>false, "generic"=>false];
+    $interruptFlag = false;
+
+    //convalida Corso
+    if (null != $this->query("SELECT Id FROM corsi WHERE Id = '$id'")->fetchColumn()) {
+      $errorCode["corso"] = true;//corso già esistente
+      $interruptFlag = true;
+    }
+
+    //convalida formatore
+    $queryF = "SELECT Id FROM formatori WHERE ";
+    foreach ($formatori as $key => $value) {
+      $queryF = $queryF." Cognome = '$value' OR";
+    }
+    $queryF = substr($queryF, 0, -3);
+    $idsF = $this->query($queryF)->fetchAll();
+    if (count($idsF) != count($formatori)) {
+      $errorCode["formatori"] = true;//formatori non trovati
+      $interruptFlag = true;
+    }
+
+    //controllo inserimento
+    if(!$interruptFlag) {
+      //inserimento in Corso
+      $Field_val = ["Id"=>$id];
+      if(!$this->insert("corsi", $Field_val)) {
+        $errorCode["generic"] = true;
+        return $errorCode;
+      }
+      //inserimento Corso_Formatori
+      $Field_val = ["Id_Formatore"=> '', "Id_Corso"=>$id];
+      foreach ($idsF as $key => $value) {
+        $Field_val["Id_Formatore"] = $value[0];
+        if(!$this->insert("corsi_formatori", $Field_val)) {
+          $errorCode["generic"] = true;
+          return $errorCode;
+        }
+      }
+    }
+    return $errorCode;
+  }
+
+  public function addFormatore($cognome){
+    //controllo nome Sede
+    $id = $this->query("SELECT Id FROM formatori WHERE Cognome = '$cognome'")->fetchColumn();
+    if (null != $id)
+      return 1;//Error: nome già esistente
+
+    $Field_val = ["Cognome"=>$cognome];
+    if(!$this->insert("formatori", $Field_val))
+      return 2;//Error: generico
+    else
+      return 0;//esito positivo
+  }
+
+  public function addSede($nome){
+    //controllo nome Sede
+    $s = $this->query("SELECT Nome FROM sedi WHERE Nome = '$nome'")->fetchColumn();
+    if ($s == $nome)
+      return 1;//Error: nome già esistente
+
+    //inserimento
+    $Field_val = ["Nome"=>$nome];
+    if(!$this->insert("sedi", $Field_val))
+      return 2;//Error: generico
+    else
+      return 0;//esito positivo
+  }
+
+  public function getCorsi(){
+    $result = [];
+    $idCorsi = $this->query("SELECT Id FROM corsi");
+    while ($c = $idCorsi->fetch())
+      array_push($result, $c[0]);
+    return $result;
   }
 }
+
+
+// DEBUG:
+$i = new InsertHandler();
+$formatori = ["SCHENA", "TALLONE"];
+$v = $i->addCorso("test", $formatori);
+foreach ($v as $key => $value) {
+  echo $key." ".$value."<br>";
+}
+
 
 ?>
