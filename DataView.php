@@ -6,9 +6,9 @@
 </head>
 
 <body>
-    <div class="col-12">
-        <div class="navbar">
-            <ul class="navbar-list">
+    <div class="">
+        <div class="">
+            <ul class="">
                 <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
                 <li>
                     <a href="index.html">Home</a>

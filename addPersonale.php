@@ -1,3 +1,16 @@
+<?php
+//verifica il login
+require_once('dbHandler.php');
+$u = new UserHandler();
+$u->verifySession();
+
+//ulteriore controllo sul livello di Accesso
+if ($u->getAcLv() < 1) {
+  echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
+  require_once("Redirect.php");
+  goToDataView();
+}
+?>
 <html>
 
 <head>
@@ -17,8 +30,31 @@
                       <input type="date" name="data" placeholder="Data di nascita" class="">
                       <input type="text" name="pNascita" placeholder="Luogo di nascita" class="">
                       <br>
-                      <input type="text" name="idCorso" placeholder="Corso" class=""><?php // TODO: combobox ?>
-                      <!--ore mod123, agg TODO-->
+                      <?php
+                        //idCorsi
+                        require_once("dbHandler.php");
+                        $i = new InsertHandler();
+                        $l = $i->getCorsi();
+                        echo "<select name='idCorso'>";
+                        foreach ($l as $key => $value)
+                          echo "<option value='".$value."'>".$value."</option>";
+                        echo "</select>";
+
+                        //idSedi
+                        $l = $i->getSedi();
+                        echo "<select name='idSedi'>";
+                        foreach ($l as $key => $value)
+                          echo "<option value='".$value['id']."'>".$value['Nome']."</option>";
+                        echo "</select>";
+                      ?>
+                      <input type="text" name="idSede" placeholder="Sede" class=""><?php // TODO: combobox ?>
+                      <br>
+                      <input type="text" name="ore" placeholder="Ore" class="">
+                      <input type="date" name="mod1" placeholder="Mod1" class="">
+                      <input type="date" name="mod2" placeholder="Mod2" class="">
+                      <input type="date" name="mod3" placeholder="Mod3" class="">
+                      <input type="date" name="agg" placeholder="Aggiornamento" class="">
+                      <br>
                       <input type="submit" name="submit" value="Aggiungi" class="">
                       <!-- Per registrare gli utenti, implementazione fututa
                         <input type="text" name="username" placeholder="Username" class="">
@@ -41,18 +77,6 @@
         </div>
     </div>
 
-<?php
-//verifica il login
-require_once('dbHandler.php');
-$u = new UserHandler();
-$u->verifySession();
 
-//ulteriore controllo sul livello di Accesso
-if ($u->getAcLv() < 1) {
-  echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
-  require_once("Redirect.php");
-  goToDataView();
-}
-?>
 </body>
 </html>

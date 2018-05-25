@@ -16,7 +16,15 @@
   $cf = $_POST["cf"];
   $data = $_POST["data"];
   $luogoNascita = $_POST["pNascita"];
+  $idCorso = $_POST["idCorso"];
+  $idSede = $_POST["idSede"];
+  $ore = $_POST["ore"];
+  $mod1 = $_POST["mod1"];
+  $mod2 = $_POST["mod2"];
+  $mod3 = $_POST["mod3"];
+  $agg = $_POST["agg"];
 
-  $dbHandler = new DbHandler();
+  $h = new InsertHandler();
   
+
  ?>

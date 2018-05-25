@@ -26,14 +26,24 @@ Class DbHandler {
   }
 
   public function countRows($tabName, $filter){
-    $sth = $this->query("SELECT count(*) FROM ".$tabName." ".$filter);
-    return $sth->fetchColumn();
+    try {
+      $sth = $this->query("SELECT count(*) FROM ".$tabName." ".$filter);
+      return $sth->fetchColumn();
+    }
+    catch(PDOException $e){
+      return -1;
+    }
   }
 
   public function query($query){
-    $sth = $this->conn->prepare($query);
-    $sth->execute();
-    return $sth;
+    try {
+      $sth = $this->conn->prepare($query);
+      $sth->execute();
+      return $sth;
+    }
+    catch(PDOException $e){
+      return null;
+    }
   }
 
   public function insert($tabName, $columns_values){
@@ -55,7 +65,7 @@ Class DbHandler {
       return true;
     }
     catch(PDOException $e){
-      echo $e;
+      //echo $e;
       return false;
     }
   }
@@ -230,7 +240,7 @@ Class UserHandler extends DbHandler{
     $record = $qPsw->fetchAll()[0];
     if (md5($psw) == $record[0]){
       $this->sessionSafeStart();
-      $_SESSION["username"] = $usr;
+      $_SESSION["username"] = $user;
       $_SESSION["logged"] = 1;
       $_SESSION["accessLv"] = $record[1];
       return $this->codifyLoginResult(1);
@@ -241,6 +251,7 @@ Class UserHandler extends DbHandler{
   }
 
   //interpreta il risultato del login
+  // NOTE: logga
   private function codifyLoginResult($result){
     $resultObj = [];
     switch ($result) {
@@ -251,6 +262,7 @@ Class UserHandler extends DbHandler{
 
       case 1:
         array_push($resultObj, 1);
+        $this->logAction("Login");
         array_push($resultObj, "Login effettuato con successo");
         break;
 
@@ -262,9 +274,36 @@ Class UserHandler extends DbHandler{
     return $resultObj;
   }
 
-  public function logout(){
-    //TODO Log
+  public function logAction($action){
     $this->sessionSafeStart();
+    $usr = $_SESSION['username'];
+    $usrId = $this->query("select id from utenti where Username = '$usr'")->fetchColumn();
+    $val = [];
+    $query;
+    if (isset($usrId[0])){
+      $val = [":IdUtente"=>$usrId[0],":Action"=>$action];
+      $query = "INSERT INTO log_utenti (idUtente, Data, Action) VALUES (:IdUtente, now(), :Action)";
+    }
+    else {
+      $val = [":Action"=>$action];
+      $query = "INSERT INTO log_utenti (Data, Action) VALUES (now(), :Action)";
+    }
+
+    try {
+      $sth = $this->conn->prepare($query);
+      $sth->execute($val);
+      return true;
+    }
+    catch (PDOException $e){
+      echo $e;
+      return false;
+    }
+  }
+
+// NOTE: logga
+  public function logout(){
+    $this->sessionSafeStart();
+    $this->logAction("Logout");
     $this->sessionSafeUnset();
   }
 
@@ -286,10 +325,22 @@ Class UserHandler extends DbHandler{
   }
 }
 
-class InsertHandler extends DbHandler
-{
-  // TODO: // DEBUG:
-  public function addPerson($nome, $cognome, $data, $cf, $pNascita, $dateCorso, $ore, $idCorso, $sede){
+class InsertHandler extends DbHandler{
+  private $log;
+
+  public function __construct(){
+    $log = new UserHandler();
+    parent::__construct();
+  }
+
+  public function isDate($date){
+    $dt = DateTime::createFromFormat("Y-m-d", $date);
+    return ($dt !== false && !array_sum($dt->getLastErrors()));
+    //https://stackoverflow.com/questions/13194322/php-regex-to-check-date-is-in-yyyy-mm-dd-format
+  }
+
+// NOTE: logga
+  public function addPerson($nome, $cognome, $dataNascita, $cf, $pNascita, $dateCorso, $ore, $idCorso, $sede){
     $errorCode = ["corso"=>false, "sede"=>false, "dateFormat"=>false, "cf"=>false, "generic"=>false];
     $interruptFlag = false;
 
@@ -305,19 +356,31 @@ class InsertHandler extends DbHandler
       $interruptFlag = true;
     }
     else{
-      // TODO: controlla formato date aaaa-mm-gg
+      //controlla formato date aaaa-mm-gg
+      foreach ($dateCorso as $key => $value) {
+        if (!$this->isDate($value)){
+          $errorCode["dateFormat"] = true;
+          $interruptFlag = true;
+        }
+      }
+    }
+
+    //convalida data di pNascita
+    if (!$this->isDate($dataNascita)){
+      $errorCode["dateFormat"] = true;
+      $interruptFlag = true;
     }
 
     //convalida corso
     $corso = $this->query("SELECT Id FROM corsi WHERE Id = '".$idCorso."'")->fetchColumn();
-    if (!isset($corso)) {
+    if (!isset($corso[0])) {
       $errorCode["corso"] = true;//corso errato o non trovato
       $interruptFlag = true;
     }
 
     //convalida Sede
     $idSede = $this->query("SELECT id FROM sedi WHERE Nome = '".$sede."'")->fetchColumn();
-    if (!isset($idSede)) {
+    if (!isset($idSede[0])) {
       $errorCode["sede"] = true;//sede errata o non trovata
       $interruptFlag = true;
     }
@@ -327,12 +390,13 @@ class InsertHandler extends DbHandler
       return $errorCode;
 
     //inserimento dati persona
-    $Field_val = ["Cognome"=>$cognome, "Nome"=>$nome, "DataNascita"=>$data, "ComuneNascita"=>$pNascita, "CF"=>$cf];
+    $Field_val = ["Cognome"=>$cognome, "Nome"=>$nome, "DataNascita"=>$dataNascita, "ComuneNascita"=>$pNascita, "CF"=>$cf];
     if(!$this->insert("Personale", $Field_val)) {
       $errorCode["generic"] = true;
       return $errorCode; //controllo parziale 2: impedisce 'inserimento delle date e delle ore'
     }
 
+    //prelevamento id record personale appena aggiunto
     $idPersonale = $this->query("SELECT Id FROM personale WHERE CF = '$cf'")->fetchColumn();
 
     //inserimento ore e date
@@ -348,10 +412,13 @@ class InsertHandler extends DbHandler
     ];
     if(!$this->insert("corsi_personale", $Field_val))
       $errorCode["generic"] = true;
+    else
+      $this->log->logAction("addP:".$idPersonale);
 
     return $errorCode;
   }
 
+// NOTE: logga
   public function addCorso($id, $formatori){
     $errorCode = ["formatori"=>false, "corso"=>false, "generic"=>false];
     $interruptFlag = false;
@@ -392,9 +459,11 @@ class InsertHandler extends DbHandler
         }
       }
     }
+    $this->log->logAction("addC:".$id);
     return $errorCode;
   }
 
+// NOTE: logga
   public function addFormatore($cognome){
     //controllo nome Sede
     $id = $this->query("SELECT Id FROM formatori WHERE Cognome = '$cognome'")->fetchColumn();
@@ -404,10 +473,13 @@ class InsertHandler extends DbHandler
     $Field_val = ["Cognome"=>$cognome];
     if(!$this->insert("formatori", $Field_val))
       return 2;//Error: generico
-    else
+    else{
+      $this->log->logAction("addF:".$cognome);
       return 0;//esito positivo
+    }
   }
 
+// NOTE: logga
   public function addSede($nome){
     //controllo nome Sede
     $s = $this->query("SELECT Nome FROM sedi WHERE Nome = '$nome'")->fetchColumn();
@@ -418,8 +490,10 @@ class InsertHandler extends DbHandler
     $Field_val = ["Nome"=>$nome];
     if(!$this->insert("sedi", $Field_val))
       return 2;//Error: generico
-    else
+    else{
+      $this->log->logAction("addS:".$nome);
       return 0;//esito positivo
+    }
   }
 
   public function getCorsi(){
@@ -429,16 +503,27 @@ class InsertHandler extends DbHandler
       array_push($result, $c[0]);
     return $result;
   }
+
+  public function getSedi(){
+    $result = [];
+    $sedi = $this->query("SELECT id, Nome FROM sedi");
+    while ($c = $sedi->fetch())
+      array_push($result, $c);
+    return $result;
+  }
+
+// TODO: sistemare
+  public function codifyError($errorCode){
+    $str = "";
+    $errorFlag = false;
+    foreach ($errorCode as $key => $value) {
+      if ($value){
+        $errorFlag = true;
+        $str = $str."Error:".$key."; ";
+      }
+    }
+    if ($errorFlag) return $str;
+    else return "Record inserito correttamente";
+  }
 }
-
-
-// DEBUG:
-$i = new InsertHandler();
-$formatori = ["SCHENA", "TALLONE"];
-$v = $i->addCorso("test", $formatori);
-foreach ($v as $key => $value) {
-  echo $key." ".$value."<br>";
-}
-
-
 ?>
