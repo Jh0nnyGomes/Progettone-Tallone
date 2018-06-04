@@ -30,7 +30,7 @@
 
   //mostra esito login
   $result = isset($_POST["response"]) ? unserialize($_POST["response"]) : null; //riconverte in array l'esito
-  if(isset($result)
+  if(isset($result))
     echo "<script type='text/javascript'>alert('".$result[1]."');</script>"; //alert esito con il messaggio
   ?>
   </body>
