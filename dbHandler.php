@@ -58,15 +58,48 @@ Class DbHandler {
     }
     $cNames = substr($cNames, 0, strlen($cNames) - 2);
     $param = substr($param, 0, strlen($param) - 2);
-    $query = "insert into ".$tabName." (".$cNames.") values (".$param.")";
+    $query = "insert into $tabName ($cNames) values ($param)";
     try{
       $sth = $this->conn->prepare($query);
       $sth->execute($arrayP);
       return true;
     }
     catch(PDOException $e){
-      //echo $e;
+      echo $query."<br>".$e;
       return false;
+    }
+  }
+
+  public function delete($tabName, $id_field, $id_value)
+  {
+    $param = [':'.$id_field=>$id_value];
+    try {
+      $query = "delete from $tabName where $id_field = :$id_field";
+      $del = $this->conn->prepare($query);
+      $del->execute($param);
+      return ['deleted'=>$del->rowCount()];
+    } catch (PDOException $e) {
+      return ['error'=>$e];
+    }
+  }
+
+  public function update($tabName, $columns_values, $id_Field_Value)
+  {
+    $str;
+    $arrayP = [];
+    $arrayP[':'.$id_Field_Value['field']] = $id_Field_Value['value'];
+    foreach ($columns_values as $key => $value) {
+      $str = $str."$key=:$key, ";
+      $arrayP[':'.$key] = $value;
+    }
+    $str = substr($str, 0, strlen($str) - 2);
+    $query = "update $tabName set $str where ".$id_Field_Value['field']."=:".$id_Field_Value['field'];
+    try{
+      $sth = $this->conn->prepare($query);
+      $sth->execute($arrayP);
+      return ['updated'=>$sth->rowCount()];
+    } catch (PDOException $e) {
+      return ['error'=>$e];
     }
   }
 }
@@ -192,7 +225,6 @@ Class DataViewHandler extends DbHandler{
     }
   }
 }
-
 
 Class UserHandler extends DbHandler{
   public $tabName;
@@ -329,8 +361,8 @@ class InsertHandler extends DbHandler{
   private $log;
 
   public function __construct(){
-    $log = new UserHandler();
     parent::__construct();
+    $this->log = new UserHandler();
   }
 
   public function isDate($date){
@@ -350,20 +382,18 @@ class InsertHandler extends DbHandler{
       $interruptFlag = true;
     }
 
-    //convalida date
-    if (count($dateCorso) != 4) {
-      $errorCode["dateFormat"] = true;
-      $interruptFlag = true;
-    }
-    else{
-      //controlla formato date aaaa-mm-gg
-      foreach ($dateCorso as $key => $value) {
-        if (!$this->isDate($value)){
-          $errorCode["dateFormat"] = true;
-          $interruptFlag = true;
-        }
+    //controlla formato date aaaa-mm-gg
+    $tmp = [];
+    foreach ($dateCorso as $key => $value) {
+      if ($value == "")
+        $tmp[$key] = null;
+      else $tmp[$key] = $value;
+      if (!$this->isDate($value) && $value != ""){
+        $errorCode["dateFormat"] = true;
+        $interruptFlag = true;
       }
     }
+    $dateCorso = $tmp;
 
     //convalida data di pNascita
     if (!$this->isDate($dataNascita)){
@@ -379,7 +409,7 @@ class InsertHandler extends DbHandler{
     }
 
     //convalida Sede
-    $idSede = $this->query("SELECT id FROM sedi WHERE Nome = '".$sede."'")->fetchColumn();
+    $idSede = $this->query("SELECT id FROM sedi WHERE id = '".$sede."'")->fetchColumn();
     if (!isset($idSede[0])) {
       $errorCode["sede"] = true;//sede errata o non trovata
       $interruptFlag = true;
@@ -387,13 +417,13 @@ class InsertHandler extends DbHandler{
 
     //controllo parziale 1
     if($interruptFlag)
-      return $errorCode;
+      return ($errorCode);
 
     //inserimento dati persona
     $Field_val = ["Cognome"=>$cognome, "Nome"=>$nome, "DataNascita"=>$dataNascita, "ComuneNascita"=>$pNascita, "CF"=>$cf];
     if(!$this->insert("Personale", $Field_val)) {
       $errorCode["generic"] = true;
-      return $errorCode; //controllo parziale 2: impedisce 'inserimento delle date e delle ore'
+      return ($errorCode); //controllo parziale 2: impedisce 'inserimento delle date e delle ore'
     }
 
     //prelevamento id record personale appena aggiunto
@@ -410,16 +440,19 @@ class InsertHandler extends DbHandler{
       "Mod3"=>$dateCorso["Mod3"],
       "Aggiornamento"=>$dateCorso["Aggiornamento"]
     ];
+    foreach ($Field_val as $key => $value) {
+      echo "k:".$key." Val:".serialize($value)."<br>";
+    }
     if(!$this->insert("corsi_personale", $Field_val))
       $errorCode["generic"] = true;
     else
       $this->log->logAction("addP:".$idPersonale);
 
-    return $errorCode;
+    return ($errorCode);
   }
 
 // NOTE: logga
-  public function addCorso($id, $formatori){
+  public function addCorso($id, $idsFormatori){
     $errorCode = ["formatori"=>false, "corso"=>false, "generic"=>false];
     $interruptFlag = false;
 
@@ -431,12 +464,12 @@ class InsertHandler extends DbHandler{
 
     //convalida formatore
     $queryF = "SELECT Id FROM formatori WHERE ";
-    foreach ($formatori as $key => $value) {
-      $queryF = $queryF." Cognome = '$value' OR";
-    }
+    foreach ($idsFormatori as $key => $value)
+      $queryF = $queryF." Id = '$value' OR";
+
     $queryF = substr($queryF, 0, -3);
     $idsF = $this->query($queryF)->fetchAll();
-    if (count($idsF) != count($formatori)) {
+    if (count($idsF) != count($idsFormatori)) {
       $errorCode["formatori"] = true;//formatori non trovati
       $interruptFlag = true;
     }
@@ -447,35 +480,42 @@ class InsertHandler extends DbHandler{
       $Field_val = ["Id"=>$id];
       if(!$this->insert("corsi", $Field_val)) {
         $errorCode["generic"] = true;
-        return $errorCode;
+        return ($errorCode);
       }
       //inserimento Corso_Formatori
       $Field_val = ["Id_Formatore"=> '', "Id_Corso"=>$id];
-      foreach ($idsF as $key => $value) {
-        $Field_val["Id_Formatore"] = $value[0];
+      foreach ($idsFormatori as $key => $value) {
+        $Field_val['Id_Formatore'] = $value;
         if(!$this->insert("corsi_formatori", $Field_val)) {
           $errorCode["generic"] = true;
-          return $errorCode;
+          return ($errorCode);
         }
       }
     }
     $this->log->logAction("addC:".$id);
-    return $errorCode;
+    return ($errorCode);
   }
 
 // NOTE: logga
   public function addFormatore($cognome){
-    //controllo nome Sede
+    //gestione errori
+    $errorCode = ['formatore'=>false, 'generic'=>false];
+    $interruptFlag = false;
+
+    //controllo se esiste gia
     $id = $this->query("SELECT Id FROM formatori WHERE Cognome = '$cognome'")->fetchColumn();
-    if (null != $id)
-      return 1;//Error: nome già esistente
+    if (null != $id){
+      $errorCode['formatore'] = true;
+      return $errorCode;
+    }
 
     $Field_val = ["Cognome"=>$cognome];
-    if(!$this->insert("formatori", $Field_val))
-      return 2;//Error: generico
-    else{
+    if(!$this->insert("formatori", $Field_val)){
+      $errorCode['generic'] = true;
+      return $errorCode;
+    } else{
       $this->log->logAction("addF:".$cognome);
-      return 0;//esito positivo
+      return $errorCode;
     }
   }
 
@@ -496,6 +536,70 @@ class InsertHandler extends DbHandler{
     }
   }
 
+  public function deletePersonale($id)
+  {
+    $result = $this->delete('personale', 'Id', $id);
+    if (isset($result['deleted']))
+      $this->log->logAction('delP:'.$id);
+    return $result;
+  }
+
+  public function deleteCorso($id)
+  {
+    $result = $this->delete('corsi', 'Id', $id);
+    if (isset($result['deleted']))
+      $this->log->logAction('delC:'.$id);
+    return $result;
+  }
+
+  public function deleteSede($id)
+  {
+    $result = $this->delete('sedi', 'id', $id);
+    if (isset($result['deleted']))
+      $this->log->logAction('delS:'.$id);
+    return $result;
+  }
+
+  public function deleteFormatore($id)
+  {
+    $result = $this->delete('formatori', 'Id', $id);
+    if (isset($result['deleted']))
+      $this->log->logAction('delF:'.$id);
+    return $result;
+  }
+
+  public function updatePersonale($id, $param)
+  {
+    $result = $this->update('personale', $param, ['field'=>'Id', 'value'=>$id]);
+    if (isset($result['updated']))
+      $this->log->logAction('updP:'.$id);
+    return $result;
+  }
+
+  public function updateCorso($id, $param)
+  {
+    $result = $this->update('corsi', $param, ['field'=>'Id', 'value'=>$id]);
+    if (isset($result['updated']))
+      $this->log->logAction('updC:'.$id);
+    return $result;
+  }
+
+  public function updateSede($id, $param)
+  {
+    $result = $this->update('sedi', $param, ['field'=>'id', 'value'=>$id]);
+    if (isset($result['updated']))
+      $this->log->logAction('updS:'.$id);
+    return $result;
+  }
+
+  public function updateFormatore($id, $param)
+  {
+    $result = $this->update('formatori', $param, ['field'=>'Id', 'value'=>$id]);
+    if (isset($result['updated']))
+      $this->log->logAction('updF:'.$id);
+    return $result;
+  }
+
   public function getCorsi(){
     $result = [];
     $idCorsi = $this->query("SELECT Id FROM corsi");
@@ -506,7 +610,16 @@ class InsertHandler extends DbHandler{
 
   public function getSedi(){
     $result = [];
-    $sedi = $this->query("SELECT id, Nome FROM sedi");
+    $sedi = $this->query("SELECT * FROM sedi");
+    while ($c = $sedi->fetch())
+      array_push($result, $c);
+    return $result;
+  }
+
+  public function getFormatori()
+  {
+    $result = [];
+    $sedi = $this->query("SELECT * FROM formatori");
     while ($c = $sedi->fetch())
       array_push($result, $c);
     return $result;

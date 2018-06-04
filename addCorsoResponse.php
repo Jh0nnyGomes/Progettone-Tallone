@@ -12,20 +12,19 @@
   }
 
   //preleva dati POST
-  $nome = $_POST["nome"];
-  $cognome = $_POST["cognome"];
-  $cf = $_POST["cf"];
-  $dataNascita = $_POST["data"];
-  $luogoNascita = $_POST["pNascita"];
-  $idCorso = $_POST["idCorso"];
-  $idSede = $_POST["idSede"];
-  $ore = (int)$_POST["ore"];
-  $dateCorso = ['Mod1'=>$_POST["mod1"], 'Mod2'=>$_POST["mod2"], 'Mod3'=>$_POST["mod3"], 'Aggiornamento'=>$_POST["agg"]];
+  $idCorso = $_POST["IdCorso"];
+  $idsFormatori = [];
+  foreach ($_POST as $key => $value) {
+    if (0 === strpos($key, "IdFormatore")){
+      $id = substr($key, strpos($key, ':') + 1); //l'id e' dopo i due punti
+      array_push($idsFormatori, $id);
+    }
+  }
 
-  //inserisce i dati e ritorna l'esito per POST
+  //inserisce i dati e ritorna gli errori
   $h = new InsertHandler();
   $back = [];
-  $result = $h->addPerson($nome, $cognome, $dataNascita, $cf, $luogoNascita, $dateCorso, $ore, $idCorso, $idSede);
+  $result = $h->addCorso($idCorso, $idsFormatori);
 
   //se trova errori ritorna il post con i dati precedentemente inseriti
   foreach ($result as $key => $value) {
@@ -36,7 +35,7 @@
   }
   $back['result'] = $h->codifyError($result);
 
-  echo "<form id='response' action='addPersonale.php' method='POST'>
+  echo "<form id='response' action='addCorso.php' method='POST'>
           <input type='hidden' name='response' value='".serialize($back)."'>
         </form>";
  ?>

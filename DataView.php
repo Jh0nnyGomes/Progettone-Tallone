@@ -37,18 +37,19 @@
                 </li>
             </ul>
         </div>
+
         <?php
         //verifica il login
         require_once('dbHandler.php');
         $u = new UserHandler();
         $u->verifySession();
 
-        //Stampa la tabella
+        //costruisce la tabella
         $dv_handler = new DataViewHandler();
         $pag = $dv_handler->getPag();
         $src = $dv_handler->getSearchedText();
 
-        echo "<table class='table'>".
+        $str = "<table class='table'>".
             "<thead>".
                 "<tr>".
                   "<th scope='col'>Cognome</th>".
@@ -63,10 +64,10 @@
                 "</tr>".
             "</thead>".
             "<tbody>";
-              $i = 0;
+        $i = 0;
         foreach ($dv_handler->search() as $record) {
           $i = $i + 1;
-          echo "<tr>
+          $str = $str."<tr>
                 <td>".$record['Cognome']."</td>
                 <td>".$record['Nome']."</td>
                 <td>".$record['CF']."</td>
@@ -86,46 +87,50 @@
                 <td>".$record['Aggiornamento']."</td>
               </tr>";
         }
-        echo "</tbody>".
-        "</table>";
-        echo "<div class='pagcontainer'>";
-        //Stampa le pagine
+        $str = $str."</tbody> </table> <div class='pagcontainer'>";
+
+        //Stampa gli indici a pie' di pagina
         $l = $dv_handler->getPagLinks();
         if ($l != null){
-            $echo;
+          $echo;
+          //Setta la pagina precedente
+          if(isset($l['prev']))
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
 
-        if(isset($l['prev'])) //Setta la pagina precedente
-          $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
+          //Setta la prima pagina
+          if(isset($l['src']) && $pag != 1)
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=0&src=".$l["src"]. "\">...</a>";
 
-        if(isset($l['src']) && $pag != 1)  //Setta la prima pagina
-          $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=0&src=".$l["src"]. "\">...</a>";
-
-        //setta gli indici delle 5 pagine succesive
-        foreach ($dv_handler->getPagLinks() as $key => $value) {
-          if ($key != 'src' && $key != 'prev' && $key != 'next' && $key != '...'){
-            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
-            unset($value);
+          //setta gli indici delle 5 pagine succesive
+          foreach ($dv_handler->getPagLinks() as $key => $value) {
+            if ($key != 'src' && $key != 'prev' && $key != 'next' && $key != '...'){
+              $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
+              unset($value);
+            }
           }
-        }
 
-        if(isset($l['...'])) //Setta [...]
-          $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
+          //Setta [...]
+          if(isset($l['...']))
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
 
-        if(isset($l['next'])) //Setta la pagina successiva
-          $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
+          //Setta la pagina successiva
+          if(isset($l['next']))
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
 
-        echo $echo;
+          $str = $str.$echo;
       }
 
-      echo "</div>";
-      ?>
-          <script>
-              function submit(id) {
-                  document.getElementById(id).submit();
-              }
+      $str = $str."</div>";
 
-          </script>
+      echo $str;
+      ?>
     </div>
+    <script>
+        function submit(id) {
+            document.getElementById(id).submit();
+        }
+
+    </script>
 </body>
 
 </html>
