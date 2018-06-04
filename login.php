@@ -30,8 +30,8 @@
 
   //mostra esito login
   $result = isset($_POST["response"]) ? unserialize($_POST["response"]) : null; //riconverte in array l'esito
-  $msg = isset($result) ? $result[1] : 'Errore: impossibile eseguire il login'; //compone il messagio dell'esito
-  echo "<script type='text/javascript'>alert('".$msg."');</script>"; //alert esito con il messaggio
+  if(isset($result)
+    echo "<script type='text/javascript'>alert('".$result[1]."');</script>"; //alert esito con il messaggio
   ?>
   </body>
 </html>
