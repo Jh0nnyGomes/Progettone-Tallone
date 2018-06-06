@@ -3,7 +3,6 @@
 }
 
 body {
-    margin: 0;
     background: linear-gradient(to top,#8ec4ff,#ffffff);
 }
 
@@ -161,16 +160,17 @@ body {
     list-style-type: none;
     display: block;
     margin-top: 0;
-    /*margin-left: 200px;*/
+    margin-left: 2.5%;
     padding: 0;
     overflow: hidden;
     background: #e0e0e0;
     color: black;
-    height: 6%;
-    /*border-radius: 25px;*/
-    width: 90%;
+    height: 8%;
+    /* border-radius: 25px; */
+    width: 80%;
     float: left;
     text-align: center;
+    margin-top: 1%;
 }
 
 .navbar-list li{
@@ -194,30 +194,31 @@ body {
 }
 
 .navbar-list .searchbox[type=text]{
-    width: 70%;
-    margin: 15px;
+    width: 30%;
+    margin-top: 15px;
+    margin-right: 5px;
 }
 
 .logout-bar{
     list-style-type: none;
     display: inline-block;
     margin-top: 0;
-    /*margin-left: 200px;*/
+    margin-right: 2.5%;
     padding: 0;
     overflow: hidden;
     background: #e0e0e0;
     color: black;
-    height: 6%;
+    height: 8%;
     /*border-radius: 25px;*/
     width: auto;
     float: right;
     text-align: center;
+    margin-top: 1%;
 }
 
 .logout-bar li{
     float: inherit;
     border-right: 2px solid #8b8b8b;
-    height: 50px;
     text-align: center;
     width: auto;
     padding: 18px;
@@ -234,11 +235,49 @@ body {
     text-decoration: none;
 }
 
+.navbar-list-course{
+    list-style-type: none;
+    display: block;
+    margin-top: 0;
+    margin-left: 2.5%;
+    padding: 0;
+    overflow: hidden;
+    background: #e0e0e0;
+    color: black;
+    height: 8%;
+    /* border-radius: 25px; */
+    width: 60%;
+    float: left;
+    text-align: center;
+    margin-top: 1%;
+}
+
+.navbar-list-course li{
+    float: inherit;
+    border-right: 2px solid #8b8b8b;
+    height: 100%;
+    text-align: center;
+    width: auto;
+    padding: 18px;
+}
+
+.navbar-list-course li:last-child{
+    border-right: none;
+}
+
+.navbar-list-course li a{
+    color: black;
+    text-align: center;
+    padding: 15px;
+    text-decoration: none;
+}
+
 .table {
-    width: 100%;
+    width: 95%;
     border-collapse: collapse;
     background-color: #cccccc;
     color: black;
+    margin-left: 2.5%;
 }
 
 .table thead {
@@ -285,7 +324,7 @@ body {
 }
 
 .pagcontainer{
-    margin-left: 33%;
+    margin-left: 20%;
     margin-top: 1%;
 }
 
@@ -298,9 +337,9 @@ body {
     background-color: #e0e0e0;
     text-align: center;
     margin-left: 2%;
-    width: 3%;
-    height: 2%;
-    padding: 0.1%;
+    width: 5%;
+    height: 5%;
+    padding: 1.1%;
 
 }
 
@@ -308,8 +347,76 @@ body {
     margin-left: 0;
 }
 
+.page-btn.next{
+    width: 15%;
+}
+
+.page-btn.prev{
+    width: 15%;
+}
+
 .arrows{
     width: 10.5%;
+}
+
+.nametxt{
+    width: 49%;
+    margin-left: 0%;
+    margin-bottom: 2%;
+}
+
+.nametxt:first-child{
+    margin-left: 1%;
+}
+
+.cftxt{
+    width: 98.5%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+.borntxt{
+    width: 40%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+.borndate{
+    width: 15%;
+}
+
+.coursecmb{
+    width: 10%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+.sedecmb{
+    width: 50%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+.hourtxt{
+    width: 20%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+.mod-date{
+    width: 20%;
+    margin-left: 1%;
+    margin-bottom: 2%;
+}
+
+p{
+    margin-left: 1%;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.addcourse{
+    margin-left: 1%;
 }
 
 @media only screen and (max-width: 1259px){

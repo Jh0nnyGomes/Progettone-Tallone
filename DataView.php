@@ -6,9 +6,9 @@
 </head>
 
 <body>
-    <div class="">
-        <div class="">
-            <ul class="">
+    <div class="container">
+        <div class="navbar">
+            <ul class="navbar-list">
                 <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
                 <li>
                     <a href="index.html">Home</a>
@@ -95,7 +95,7 @@
           $echo;
           //Setta la pagina precedente
           if(isset($l['prev']))
-            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
+            $echo = $echo."<a class = 'page-btn prev'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
 
           //Setta la prima pagina
           if(isset($l['src']) && $pag != 1)
@@ -115,7 +115,7 @@
 
           //Setta la pagina successiva
           if(isset($l['next']))
-            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
+            $echo = $echo."<a class = 'page-btn next'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
 
           $str = $str.$echo;
       }

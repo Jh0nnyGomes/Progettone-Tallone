@@ -19,9 +19,9 @@ if ($u->getAcLv() < 1) {
 </head>
 
 <body>
-  <div class="">
-      <div class="">
-          <ul class="">
+  <div class="container">
+      <div class="navbar">
+          <ul class="navbar-list">
               <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
               <li>
                   <a href="index.html">Home</a>
@@ -65,17 +65,17 @@ if ($u->getAcLv() < 1) {
 
                     //tart form
                     $str = '<form action="addPersonaleResponse.php" method="post">
-                      <input type="text" name="nome" placeholder="Nome" value="'.$resp['tmp']['nome'].'" class="">
-                      <input type="text" name="cognome" placeholder="Cognome" value="'.$resp['tmp']['cognome'].'" class="">
-                      <input type="text" name="cf" placeholder="Codice fiscale" value="'.$resp['tmp']['cf'].'" class="">
-                      <input type="date" name="data" placeholder="Data di nascita" value="'.$resp['tmp']['data'].'" class="">
-                      <input type="text" name="pNascita" placeholder="Luogo di nascita" value="'.$resp['tmp']['pNascita'].'" class="">
+                      <input type="text" name="nome" placeholder="Nome" value="'.$resp['tmp']['nome'].'" class="nametxt">
+                      <input type="text" name="cognome" placeholder="Cognome" value="'.$resp['tmp']['cognome'].'" class="nametxt">
+                      <input type="text" name="cf" placeholder="Codice fiscale" value="'.$resp['tmp']['cf'].'" class="cftxt">
+                      <input type="text" name="pNascita" placeholder="Luogo di nascita" value="'.$resp['tmp']['pNascita'].'" class="borntxt">
+                      <input type="date" name="data" placeholder="Data di nascita" value="'.$resp['tmp']['data'].'" class="borndate">
                       <br>';
 
                     //lista corsi
                     $i = new InsertHandler();
                     $l = $i->getCorsi();
-                    $str = $str."<select name='idCorso'> <option value='' disabled selected>Corso</option> ";
+                    $str = $str."<select name='idCorso' class='coursecmb'> <option value='' disabled selected>Corso</option> ";
                     foreach ($l as $key => $value)
                       if ($value == $resp['tmp']['idCorso'] && isset($value))
                         $str = $str."<option selected='selected' value='".$value."'>".$value."</option> ";
@@ -85,21 +85,20 @@ if ($u->getAcLv() < 1) {
 
                     //lista sedi
                     $l = $i->getSedi();
-                    $str = $str." <select name='idSede'> <option value='' disabled selected>Sede</option> ";
+                    $str = $str." <select name='idSede'class='sedecmb'> <option value='' disabled selected>Sede</option>";
                     foreach ($l as $key => $value)
                     if ($value['id'] == $resp['tmp']['idSede'])
-                      $str = $str." <option selected='selected' value='".$value['id']."'>".$value['Nome']."</option> ";
+                      $str = $str." <option selected='selected' value='".$value['id']."'>".$value['Nome']."</option>";
                     else
-                      $str = $str." <option value='".$value['id']."'>".$value['Nome']."</option> ";
+                      $str = $str." <option value='".$value['id']."'>".$value['Nome']."</option>";
 
                     //end form
-                    $str = $str." </select> <input type='text' name='ore' placeholder='Ore' value='".$resp['tmp']['ore']."' class=''>
-                      <input type='date' name='mod1' placeholder='Mod1' value='".$resp['tmp']['mod1']."' class=''>
-                      <input type='date' name='mod2' placeholder='Mod2' value='".$resp['tmp']['mod2']."' class=''>
-                      <input type='date' name='mod3' placeholder='Mod3' value='".$resp['tmp']['mod3']."' class=''>
-                      <input type='date' name='agg' placeholder='Aggiornamento' value='".$resp['tmp']['agg']."' class=''>
-                      <br>
-                      <input type='submit' name='submit' value='Aggiungi' class=''>
+                    $str = $str." </select> <input type='text' name='ore' placeholder='Ore' value='".$resp['tmp']['ore']."' class='hourtxt'><br>
+                      <p>Mod 1<input type='date' name='mod1' placeholder='Mod1' value='".$resp['tmp']['mod1']."' class='mod-date'><br>
+                      <p>Mod 2<input type='date' name='mod2' placeholder='Mod2' value='".$resp['tmp']['mod2']."' class='mod-date'><br>
+                      <p>Mod 3<input type='date' name='mod3' placeholder='Mod3' value='".$resp['tmp']['mod3']."' class='mod-date'><br>
+                      <p>Aggiornamento<input type='date' name='agg' placeholder='Aggiornamento' value='".$resp['tmp']['agg']."' class='mod-date'></p><br>
+                      <input type='submit' name='submit' value='Aggiungi' class='addcourse'>
                     </form>";
 
                     echo $str;

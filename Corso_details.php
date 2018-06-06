@@ -6,7 +6,7 @@
   <body>
     <div class="col-12">
       <div class="navbar">
-        <ul class="navbar-list">
+        <ul class="navbar-list-course">
           <li>
             <a href="https://www.isisbisuschio.gov.it/">Home</a>
           </li>
