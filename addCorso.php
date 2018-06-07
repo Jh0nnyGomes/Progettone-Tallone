@@ -16,6 +16,7 @@ if ($u->getAcLv() < 1) {
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="css/style.css">
+     <script type='text/javascript'></script>
 </head>
 
 <body>
@@ -70,22 +71,22 @@ if ($u->getAcLv() < 1) {
 
                     // TODO: metter il bottone 'addFormatoreBtn' a lato della select
                     $str = "<form action='addCorsoResponse.php' method='post' id='addCform'>
-                              <input type='text' name='IdCorso' placeholder='Corso' value='".$resp['tmp']['IdCorso']."' class=''>
+                              <input type='text' name='IdCorso' placeholder='Corso' value='".$resp['tmp']['IdCorso']."' class='coursetxt'>
                               <div class='multiselect'>
-                                <div class='selectBox'>
-                                  <select id='select'>
+                                <div class='selectBox' onclick='showList()'>
+                                  <select id='select' >
                                     <option>Formatori</option>
                                   </select>
                                   <div class='overSelect'></div>
                                 </div>
-                                <div id='checkboxes'>";
+                                <div id='checkboxes' class='hidden'>";
 
                     //aggiunge le checkbox
                     $i = new InsertHandler();
                     $l = $i->getFormatori();
                     $c = 0;
                     foreach ($l as $key => $value){
-                      $str = $str." <label id='$value[0]L' for='$value[0]' class='a'> <input type='checkbox' name='IdFormatore_$c:$value[0]' class='i' ";
+                      $str = $str." <label><input type='checkbox' name='IdFormatore_$c:$value[0]' class='i' ";
                       //check delle checkbox precedentemente inviate
                       if (isset($resp['tmp']))
                         foreach ($resp['tmp'] as $k => $v)
@@ -99,13 +100,13 @@ if ($u->getAcLv() < 1) {
                     //form  per l'aggiunta dei Formatori
                     $str = $str.'</div>
                                 </div>
-                                <input type="submit" name="submit" value="aggiungi Corso">
+                                <input type="submit" name="submit" value="Aggiungi Corso" class="addcourse">
                               </form>
-                              <input id="addFormatoriBtn" type="button" onclick="addFormatore()" value="+">
+                              <input id="addFormatoriBtn" type="button" onclick="addFormatore()" value="Aggiungi Formatore" class="addtrainer">
                               <div id="addFormatori" style="display:none">
                                 <form id="addFormatoriForm" action="addFormatoreResponse.php" method="post">
-                                  <input type="text" name="cognome" placeholder="Cognome Formatore" value="'.$respF['tmp']['cognome'].'" class="">
-                                  <input type="submit" value="aggiungi formatore">
+                                  <input type="text" name="cognome" placeholder="Cognome Formatore" value="'.$respF['tmp']['cognome'].'" class="trainertxt">
+                                  <input type="submit" value="Aggiungi Formatore" class="trainerbtn">
                                 </form>
                               </div>';
 
@@ -118,26 +119,34 @@ if ($u->getAcLv() < 1) {
 
     <script>
     var addingFormatore = false;
+        
+    function showList(){
+        document.getElementById("checkboxes").classList.toggle("show");
+    }
 
-    function showList(event) {
+    /*function showList(event) {
       if (!event.target.matches('.overSelect, .multiselect, .checkboxes, .selectBox, .a, .i'))
         document.getElementById("checkboxes").style.display = "none";
       else
         document.getElementById("checkboxes").style.display = "block";
     }
-    document.body.addEventListener('click', showList);
+    document.body.addEventListener('click', showList);*/
+        
+    function addFormatore1(){
+        
+    }
 
     function addFormatore(){
       var btn = document.getElementById("addFormatoriBtn");
       var form = document.getElementById("addFormatori");
       if (!addingFormatore){
         form.style.display = 'block';
-        btn.value = " - ";
+        btn.value = " Annulla ";
         grayer("addCform", true);
         addingFormatore = true;
       } else {
         form.style.display = 'none';
-        btn.value = " + ";
+        btn.value = " Aggiungi Formatore ";
         grayer("addCform", false);
         addingFormatore = false;
       }

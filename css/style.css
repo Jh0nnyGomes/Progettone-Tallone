@@ -98,12 +98,12 @@ body {
 }*/
 
 .login {
-    margin-top: 10%;
-    margin-left: 35%;
-    margin-right: 35%;
+    margin-top: 15%;
+    margin-left: 25%;
+    margin-right: 25%;
     margin-bottom: 0%;
-    width: 30%;
-    height: 5%;
+    width: 50%;
+    height: 6%;
 }
 
 .textbox[type=text] {
@@ -113,7 +113,7 @@ body {
 }
 
 .textbox[type=text]::placeholder {
-    text-indent: 35%;
+    text-indent: 34%;
 }
 
 .textbox[type=text]:focus {
@@ -129,7 +129,7 @@ body {
 }
 
 .textbox[type=password]::placeholder {
-    text-indent: 35%;
+    text-indent: 34%;
 }
 
 .textbox[type=password]:focus {
@@ -415,10 +415,93 @@ p{
     margin-bottom: 0;
 }
 
-.addcourse{
+.addstaff{
     margin-left: 1%;
 }
 
-@media only screen and (max-width: 1259px){
+.multiselect {
+    width: 50%;
+    margin-top: 2%;
+    margin-left: 1%;
+}
+
+.selectBox {
+    position: relative;
+}
+
+.selectBox select {
+    width: 50%;
+    font-weight: bold;
+}
+
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#checkboxes {
+    border: 1px #8b8b8b solid;
+    border-top: none;
+    background-color: #c2d0dc;
+    background: linear-gradient(to top,#c2d0dc,#ffffff);
     
+}
+
+.hidden{
+    display: none;
+}
+
+#checkboxes label {
+    display: block;
+    margin-bottom: 3%;
+    border-bottom: 1px #8b8b8b solid;
+    padding-top: 1%;
+    padding-left: 5%;
+}
+
+#checkboxes label:last-child{
+    border-bottom: none;
+}
+
+#checkboxes label:hover {
+    background-color: #1e90ff;
+}
+
+.show {
+    display:block;
+    height: 50%;
+    overflow-y: scroll;
+    width: 50%;
+}
+
+.coursetxt{
+    width: 50%;
+    margin-left: 1%;
+}
+
+.addcourse{
+    margin-top: 2%;
+    margin-left: 1%;
+}
+
+.addtrainer{
+    position: absolute;
+    top: 21%;
+    left: 30%;
+}
+
+.trainertxt{
+    position: absolute;
+    top: 21%;
+    left: 38%;
+    width: 44%;
+}
+
+.trainerbtn{
+    position: absolute;
+    top: 21%;
+    left: 84%;
 }

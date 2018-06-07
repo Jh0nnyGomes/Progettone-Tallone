@@ -98,7 +98,7 @@ if ($u->getAcLv() < 1) {
                       <p>Mod 2<input type='date' name='mod2' placeholder='Mod2' value='".$resp['tmp']['mod2']."' class='mod-date'><br>
                       <p>Mod 3<input type='date' name='mod3' placeholder='Mod3' value='".$resp['tmp']['mod3']."' class='mod-date'><br>
                       <p>Aggiornamento<input type='date' name='agg' placeholder='Aggiornamento' value='".$resp['tmp']['agg']."' class='mod-date'></p><br>
-                      <input type='submit' name='submit' value='Aggiungi' class='addcourse'>
+                      <input type='submit' name='submit' value='Aggiungi' class='addstaff'>
                     </form>";
 
                     echo $str;
