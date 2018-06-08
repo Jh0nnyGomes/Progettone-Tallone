@@ -12,15 +12,15 @@
   }
 
   //preleva dati POST
-  $nome = $_POST["nome"];
-  $cognome = $_POST["cognome"];
-  $cf = $_POST["cf"];
-  $dataNascita = $_POST["data"];
-  $luogoNascita = $_POST["pNascita"];
-  $idCorso = $_POST["idCorso"];
-  $idSede = $_POST["idSede"];
-  $ore = (int)$_POST["ore"];
-  $dateCorso = ['Mod1'=>$_POST["mod1"], 'Mod2'=>$_POST["mod2"], 'Mod3'=>$_POST["mod3"], 'Aggiornamento'=>$_POST["agg"]];
+  $nome = $_POST["Nome"];
+  $cognome = $_POST["Cognome"];
+  $cf = $_POST["CF"];
+  $dataNascita = $_POST["DataNascita"];
+  $luogoNascita = $_POST["ComuneNascita"];
+  $idCorso = $_POST["Id_Corso"];
+  $idSede = $_POST["Id_Sede"];
+  $ore = (int)$_POST["Ore"];
+  $dateCorso = ['Mod1'=>$_POST["Mod1"], 'Mod2'=>$_POST["Mod2"], 'Mod3'=>$_POST["Mod3"], 'Aggiornamento'=>$_POST["Aggiornamento"]];
 
   //inserisce i dati e ritorna l'esito per POST
   $h = new InsertHandler();
@@ -37,9 +37,10 @@
   $back['result'] = $h->codifyError($result);
 
   echo "<form id='response' action='addPersonale.php' method='POST'>
-          <input type='hidden' name='response' value='".serialize($back)."'>
-        </form>";
- ?>
- <script type="text/javascript">
-   document.getElementById('response').submit();
- </script>
+          <input type='hidden' name='response' value='addPerson'>
+          <input type='hidden' name='msg' value='".serialize($back)."'>
+        </form>
+        <script type='text/javascript'>
+          document.getElementById('response').submit();
+        </script>";
+?>

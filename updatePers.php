@@ -3,14 +3,27 @@
   require_once('dbHandler.php');
   $u = new UserHandler();
   $u->verifySession();
-
+  $lv = $u->getAcLv();
   //ulteriore controllo sul livello di Accesso
-  if ($u->getAcLv() < 1) {
+  if ($lv < 1) {
     echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
     require_once("Redirect.php");
     goToDataView();
   }
+
+  //esito dell'operazione precedente->solo se c'è il redirect a questa pagina dal response
+  if (isset($_POST['response'])) {
+    $back = unserialize($_POST['msg']);
+    $tmp = $back['tmp'];
+    $src = $tmp['src'];
+    $pag = $tmp['pag'];
+  } else if (isset($_POST['person'])){
+    $tmp = unserialize($_POST['person']);
+    $src = $_POST['src'];
+    $pag = $_POST['pag'];
+  }
 ?>
+
 <html>
 
 <head>
@@ -19,9 +32,9 @@
 </head>
 
 <body>
-  <div class="container">
-      <div class="navbar">
-        <ul class="navbar-list">
+  <div class="">
+      <div class="">
+          <ul class="">
               <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
               <li>
                   <a href="index.html">Home</a>
@@ -51,26 +64,20 @@
             <div>
                 <div>
                   <?php
-
-                    //esito dell'operazione precedente->solo se c'è il redirect a questa pagina dal response
-                    if (isset($_POST['response'])) {
-                      $back = unserialize($_POST['msg']);
-                      $tmp = $back['tmp'];
-                    }
-
-                    //tart form
-                    $str = '<form action="addPersonaleResponse.php" method="post">
-                      <input type="text" name="Nome" placeholder="Nome" value="'.$tmp['Nome'].'" class="nametxt">
-                      <input type="text" name="Cognome" placeholder="Cognome" value="'.$tmp['Cognome'].'" class="nametxt">
-                      <input type="text" name="CF" placeholder="Codice fiscale" value="'.$tmp['CF'].'" class="cftxt">
-                      <input type="date" name="DataNascita" placeholder="Data di nascita" value="'.$tmp['DataNascita'].'" class="borndate">
-                      <input type="text" name="ComuneNascita" placeholder="Luogo di nascita" value="'.$tmp['ComuneNascita'].'" class="borntxt">
+                    //start form
+                    $str = '<form action="updatePersResponse.php" method="post">
+                      <input type="hidden" name="Id" value="'.$tmp['Id'].'" class="">
+                      <input type="text" name="Nome" placeholder="Nome" value="'.$tmp['Nome'].'" class="">
+                      <input type="text" name="Cognome" placeholder="Cognome" value="'.$tmp['Cognome'].'" class="">
+                      <input type="text" name="CF" placeholder="Codice fiscale" value="'.$tmp['CF'].'" class="">
+                      <input type="date" name="DataNascita" placeholder="Data di nascita" value="'.$tmp['DataNascita'].'" class="">
+                      <input type="text" name="ComuneNascita" placeholder="Luogo di nascita" value="'.$tmp['ComuneNascita'].'" class="">
                       <br>';
 
                     //lista corsi
                     $i = new InsertHandler();
                     $l = $i->getCorsi();
-                    $str = $str."<select name='Id_Corso' class='coursecmb'> <option value='' disabled selected>Corso</option> ";
+                    $str = $str."<select name='Id_Corso'> <option value='' disabled selected>Corso</option> ";
                     foreach ($l as $key => $value)
                       if ($value == $tmp['Id_Corso'] && isset($value))
                         $str = $str."<option selected='selected' value='".$value."'>".$value."</option> ";
@@ -80,7 +87,7 @@
 
                     //lista sedi
                     $l = $i->getSedi();
-                    $str = $str." <select name='Id_Sede'class='sedecmb'> <option value='' disabled selected>Sede</option> ";
+                    $str = $str." <select name='Id_Sede'> <option value='' disabled selected>Sede</option> ";
                     foreach ($l as $key => $value)
                     if ($value['id'] == $tmp['Id_Sede'])
                       $str = $str." <option selected='selected' value='".$value['id']."'>".$value['Nome']."</option> ";
@@ -88,12 +95,18 @@
                       $str = $str." <option value='".$value['id']."'>".$value['Nome']."</option> ";
 
                     //end form
-                    $str = $str." </select> <input type='text' name='Ore' placeholder='Ore' value='".$tmp['Ore']."' class='hourtxt'><br>
-                      <p>Mod 1<input type='date' name='Mod1' placeholder='Mod1' value='".$tmp['Mod1']."' class='mod-date'><br>
-                      <p>Mod 2<input type='date' name='Mod2' placeholder='Mod2' value='".$tmp['Mod2']."' class='mod-date'><br>
-                      <p>Mod 3<input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class='mod-date'><br>
-                      <p>Aggiornamento<input type='date' name='Aggiornamento' placeholder='Aggiornamento' value='".$tmp['Aggiornamento']."' class='mod-date'></p><br>
-                      <input type='submit' name='submit' value='Aggiungi' class='addstaff'>
+                    $str = $str." </select> <input type='text' name='Ore' placeholder='Ore' value='".$tmp['Ore']."' class=''>
+                      <input type='date' name='Mod1' placeholder='Mod1' value='".$tmp['Mod1']."' class=''>
+                      <input type='date' name='Mod2' placeholder='Mod2' value='".$tmp['Mod2']."' class=''>
+                      <input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class=''>
+                      <input type='date' name='Aggiornamento' placeholder='Aggiornamento' value='".$tmp['Aggiornamento']."' class=''>
+                      <br>
+                      <input type='hidden' name='src' value='$src'>
+                      <input type='hidden' name='pag' value='$pag'>
+                      <input type='submit' name='submit' value='Modifica' class=''>
+                    </form>
+                    <form action='DataView.php?pag=$pag&src=$src' method='POST'>
+                      <input type='submit' name='submit' value='Torna alla tabella'>
                     </form>";
 
                     echo $str;

@@ -29,9 +29,10 @@
   $back['result'] = $h->codifyError($result);
 
   echo "<form id='response' action='addCorso.php' method='POST'>
-          <input type='hidden' name='responseF' value='".serialize($back)."'>
-        </form>";
- ?>
- <script type="text/javascript">
-   document.getElementById('response').submit();
- </script>
+          <input type='hidden' name='response' value='addFormatore'>
+          <input type='hidden' name='msg' value='".serialize($back)."'>
+        </form>
+        <script type='text/javascript'>
+          document.getElementById('response').submit();
+        </script>";
+?>

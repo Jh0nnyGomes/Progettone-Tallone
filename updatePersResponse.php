@@ -1,0 +1,70 @@
+<?php
+  //verifica il login
+  require_once('dbHandler.php');
+  $u = new UserHandler();
+  $u->verifySession();
+  $ins = new InsertHandler();
+
+  //ulteriore controllo sul livello di Accesso
+  if ($u->getAcLv() < 1) {
+    echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
+    require_once("Redirect.php");
+    goToDataView();
+  }
+
+  //preleva dati POST
+  $src = $_POST['src'];
+  $pag = $_POST['pag'];
+  $id = (int)$_POST['Id'];
+  $param_p['Nome'] = $_POST["Nome"];
+  $param_p['Cognome'] = $_POST["Cognome"];
+  $param_p['CF'] = $_POST["CF"];
+  $param_p['DataNascita'] = $ins->isDate($_POST["DataNascita"]) ? $_POST["DataNascita"] : null;
+  $param_p['ComuneNascita'] = $_POST["ComuneNascita"];
+  $param_c['Id_Corso'] = $_POST["Id_Corso"];
+  $param_c['Id_Sede'] = $_POST["Id_Sede"];
+  $param_c['Ore'] = (int)$_POST["Ore"];
+  $param_c['Mod1'] = $ins->isDate($_POST["Mod1"]) ? $_POST["Mod1"] : null;
+  $param_c['Mod2'] = $ins->isDate($_POST["Mod2"]) ? $_POST["Mod2"] : null;
+  $param_c['Mod3'] = $ins->isDate($_POST["Mod3"]) ? $_POST["Mod3"] : null;
+  $param_c['Aggiornamento'] = $ins->isDate($_POST["Aggiornamento"]) ? $_POST["Aggiornamento"] : null;
+
+  //controlla i campi ed evita di inviare campi non modificati
+  $db = new DbHandler();
+  $p = $db->query("
+    SELECT personale.*, corsi_personale.Id_Sede, corsi_personale.Id_Corso, corsi_personale.Ore, corsi_personale.Mod1, corsi_personale.Mod2, corsi_personale.Mod3, corsi_personale.Aggiornamento
+    FROM corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.id)
+    WHERE corsi_personale.Id_Personale = $id")->fetch();
+
+  $paramCorso = [];
+  $paramPersona = [];
+
+  foreach ($param_c as $key => $value)
+    if ($value != $p[$key])
+      $paramCorso[$key] = $value;
+
+  foreach ($param_p as $key => $value)
+    if ($value != $p[$key])
+      $paramPersona[$key] = $value;
+
+  //inserisce i dati e ritorna l'esito per POST
+  $back = [];
+  $result = $ins->updatePersonale($id, $paramPersona, $paramCorso);
+  if ($result){
+    $back = 'Record modificato con successo';
+    $action = "DataView.php?src=$src&pag=$pag";
+  } else {
+    $back['result'] = 'operazione fallita';
+    $back['tmp'] = $_POST;
+    $action = "updatePers.php";
+    $back = serialize($back);
+  }
+
+  echo "<form id='response' action='$action' method='POST'>
+          <input type='hidden' name='response' value='addPerson'>
+          <input type='hidden' name='msg' value='$back'>
+        </form>
+        <script type='text/javascript'>
+          document.getElementById('response').submit();
+        </script>";
+?>

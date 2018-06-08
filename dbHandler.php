@@ -12,8 +12,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    //$this->password = 'root';//julian DEBUG
-    $this->password = 'mysql';//jhonny DEBUG
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
@@ -70,8 +70,7 @@ Class DbHandler {
     }
   }
 
-  public function delete($tabName, $id_field, $id_value)
-  {
+  public function delete($tabName, $id_field, $id_value){
     $param = [':'.$id_field=>$id_value];
     try {
       $query = "delete from $tabName where $id_field = :$id_field";
@@ -83,8 +82,18 @@ Class DbHandler {
     }
   }
 
-  public function update($tabName, $columns_values, $id_Field_Value)
-  {
+  protected function delWhere($tabName, $condition){
+    try {
+      $query = "delete from $tabName where $condition";
+      $del = $this->conn->prepare($query);
+      $del->execute($param);
+      return ['deleted'=>$del->rowCount()];
+    } catch (PDOException $e) {
+      return ['error'=>$e];
+    }
+  }
+
+  public function update($tabName, $columns_values, $id_Field_Value){
     $str;
     $arrayP = [];
     $arrayP[':'.$id_Field_Value['field']] = $id_Field_Value['value'];
@@ -94,6 +103,24 @@ Class DbHandler {
     }
     $str = substr($str, 0, strlen($str) - 2);
     $query = "update $tabName set $str where ".$id_Field_Value['field']."=:".$id_Field_Value['field'];
+    try{
+      $sth = $this->conn->prepare($query);
+      $sth->execute($arrayP);
+      return ['updated'=>$sth->rowCount()];
+    } catch (PDOException $e) {
+      return ['error'=>$e];
+    }
+  }
+
+  protected function updWhere($tabName, $columns_values, $where){
+    $str;
+    $arrayP = [];
+    foreach ($columns_values as $key => $value) {
+      $str = $str."$key=:$key, ";
+      $arrayP[':'.$key] = $value;
+    }
+    $str = substr($str, 0, strlen($str) - 2);
+    $query = "update $tabName set $str where $where";
     try{
       $sth = $this->conn->prepare($query);
       $sth->execute($arrayP);
@@ -113,23 +140,22 @@ Class DetailsHandler extends DbHandler{
     //PRELEVA I NOMI DEI FORMATORI
     $result = [];
     $nfQuery = $this->query(
-      "SELECT formatori.Cognome
-      from corsisicurezzadb.formatori join corsisicurezzadb.corsi_formatori on formatori.Id = corsi_formatori.Id_Formatore
-      where corsi_formatori.Id_Corso = '$corsoId'"
+      "SELECT distinct Cognome
+      from formatori join corsi_formatori on Id = Id_Formatore
+      where Id_Corso = '$corsoId'"
       );
     $sede = $this->query(
-      "SELECT distinct sedi.Nome
-      from corsisicurezzadb.sedi join corsisicurezzadb.corsi_personale on sedi.Id = corsi_personale.Id_Sede
-      where corsi_personale.Id_Corso = '$corsoId'"
+      "SELECT distinct Nome
+      from sedi join corsi_personale on Id = Id_Sede
+      where Id_Corso = '$corsoId'"
       )->fetchColumn();
 
     $nomiFormatori = [];
-    while ($n = $nfQuery->fetch())
-      array_push($nomiFormatori, $n[0]);
+    while ($n = $nfQuery->fetch()[0])
+      array_push($nomiFormatori, $n);
 
     $result["Formatori"] = $nomiFormatori;
     $result["Sede"] = $sede;
-
     return $result;
   }
 }
@@ -149,14 +175,13 @@ Class DataViewHandler extends DbHandler{
   }
 
   public function buildQuery($searchText){
-    $sql = "SELECT corsisicurezzadb.personale.Cognome, corsisicurezzadb.personale.Nome, corsisicurezzadb.personale.CF, corsisicurezzadb.corsi_personale.Id_Corso, corsisicurezzadb.corsi_personale.Ore, corsisicurezzadb.corsi_personale.Mod1, corsisicurezzadb.corsi_personale.Mod2, corsisicurezzadb.corsi_personale.Mod3, corsisicurezzadb.corsi_personale.Aggiornamento".
-    " from corsi_personale, personale".
-    " where corsisicurezzadb.corsi_personale.Id_Personale = corsisicurezzadb.personale.Id".
-    " and ( personale.CF LIKE '%$searchText%'".
+    $sql = "SELECT corsisicurezzadb.personale.*, corsisicurezzadb.corsi_personale.Id_Sede, corsisicurezzadb.corsi_personale.Id_Corso, corsisicurezzadb.corsi_personale.Ore, corsisicurezzadb.corsi_personale.Mod1, corsisicurezzadb.corsi_personale.Mod2, corsisicurezzadb.corsi_personale.Mod3, corsisicurezzadb.corsi_personale.Aggiornamento".
+    " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id)".
+    " where personale.CF LIKE '%$searchText%'".
     " or personale.Cognome LIKE '%$searchText%'".
     " or personale.Nome LIKE '%$searchText%'".
-    " or corsi_personale.Id_Corso LIKE '%$searchText%' )".
-    " order by corsi_personale.Id_Corso";
+    " or corsi_personale.Id_Corso LIKE '%$searchText%'".
+    " order by corsi_personale.Id_Corso, personale.Cognome";
     return $sql;
   }
 
@@ -172,7 +197,7 @@ Class DataViewHandler extends DbHandler{
   }
 
   public function getSearchedText(){
-    return $_GET['src'];
+    return (string)$_GET['src'];
   }
 
   public function getPag(){
@@ -440,9 +465,6 @@ class InsertHandler extends DbHandler{
       "Mod3"=>$dateCorso["Mod3"],
       "Aggiornamento"=>$dateCorso["Aggiornamento"]
     ];
-    foreach ($Field_val as $key => $value) {
-      echo "k:".$key." Val:".serialize($value)."<br>";
-    }
     if(!$this->insert("corsi_personale", $Field_val))
       $errorCode["generic"] = true;
     else
@@ -536,64 +558,99 @@ class InsertHandler extends DbHandler{
     }
   }
 
-  public function deletePersonale($id)
-  {
+  public function deletePersonale($id){
     $result = $this->delete('personale', 'Id', $id);
     if (isset($result['deleted']))
       $this->log->logAction('delP:'.$id);
     return $result;
   }
 
-  public function deleteCorso($id)
-  {
+  public function deleteCorso($id){
     $result = $this->delete('corsi', 'Id', $id);
     if (isset($result['deleted']))
       $this->log->logAction('delC:'.$id);
     return $result;
   }
 
-  public function deleteSede($id)
-  {
+  public function deleteSede($id){
     $result = $this->delete('sedi', 'id', $id);
     if (isset($result['deleted']))
       $this->log->logAction('delS:'.$id);
     return $result;
   }
 
-  public function deleteFormatore($id)
-  {
+  public function deleteFormatore($id){
     $result = $this->delete('formatori', 'Id', $id);
     if (isset($result['deleted']))
       $this->log->logAction('delF:'.$id);
     return $result;
   }
 
-  public function updatePersonale($id, $param)
-  {
-    $result = $this->update('personale', $param, ['field'=>'Id', 'value'=>$id]);
-    if (isset($result['updated']))
-      $this->log->logAction('updP:'.$id);
-    return $result;
+  public function updatePersonale($id, $paramPersona, $paramCorso){
+    //aggiorna la tabella Personale
+    if (count($paramPersona) != 0){
+      $result = $this->update('personale', $paramPersona, ['field'=>'Id', 'value'=>$id]);
+      if (!isset($result['updated']))
+        return false;
+    }
+
+    //aggiorna la tabella corsi_personale
+    if (count($paramCorso) != 0){
+      $result = $this->update('corsi_personale', $paramCorso, ['field'=>'Id_Personale', 'value'=>$id]);
+      if (!isset($result['updated']))
+        return false;
+    }
+
+    $this->log->logAction('updP:'.$id);
+    return true;
   }
 
-  public function updateCorso($id, $param)
-  {
-    $result = $this->update('corsi', $param, ['field'=>'Id', 'value'=>$id]);
-    if (isset($result['updated']))
-      $this->log->logAction('updC:'.$id);
-    return $result;
+  public function updateCorso($oldId, $newId, $idsFormatori){
+    //aggiorna la tabella Corsi1
+    if ($oldId != $newId){
+      $result = $this->updWhere('corsi', ['Id'=>$newId], "Id = '$oldId'");
+      $id = $newId;
+      if (!isset($result['updated'])) return false;
+    } else $id = $oldId;
+
+    //ottiene le vecchie relazioni
+    $r = $this->query("SELECT Id_Formatore FROM corsi_formatori WHERE Id_Corso ='$id'");
+    $oldFormatori = [];
+    while ($v = $r->fetch())
+      array_push($oldFormatori, $v[0]);
+
+    //stabilisce, date le vecchie relazioni e le nuove: quali cancellare  quali aggiungere
+    $toAdd = array_diff($idsFormatori, $oldFormatori);
+    $toDelete = array_diff($oldFormatori, $idsFormatori);
+
+    //elimina
+    if (count($toDelete) > 0){
+      foreach ($toDelete as $key => $value) $q = $q."Id_Formatore = '$value' or ";
+      $q = substr($q, 0, strlen($q) - 4);
+      $result = $this->delWhere('corsi_formatori', $q);
+      if (!isset($result['deleted']))
+        return false;
+    }
+
+    //aggiunge
+    if (count($toAdd) > 0){
+      foreach ($toAdd as $key => $value)
+        if (!$this->insert('corsi_formatori', ['Id_Corso'=>$id, 'Id_Formatore'=>$value]))
+          return false;
+    }
+
+    $this->log->logAction('updc:'.$id);
+    return true;
   }
 
-  public function updateSede($id, $param)
-  {
+  public function updateSede($id, $param){
     $result = $this->update('sedi', $param, ['field'=>'id', 'value'=>$id]);
     if (isset($result['updated']))
       $this->log->logAction('updS:'.$id);
     return $result;
   }
 
-  public function updateFormatore($id, $param)
-  {
+  public function updateFormatore($id, $param){
     $result = $this->update('formatori', $param, ['field'=>'Id', 'value'=>$id]);
     if (isset($result['updated']))
       $this->log->logAction('updF:'.$id);
@@ -602,7 +659,7 @@ class InsertHandler extends DbHandler{
 
   public function getCorsi(){
     $result = [];
-    $idCorsi = $this->query("SELECT Id FROM corsi");
+    $idCorsi = $this->query("SELECT Id FROM corsi ORDER BY Id");
     while ($c = $idCorsi->fetch())
       array_push($result, $c[0]);
     return $result;
@@ -610,22 +667,21 @@ class InsertHandler extends DbHandler{
 
   public function getSedi(){
     $result = [];
-    $sedi = $this->query("SELECT * FROM sedi");
+    $sedi = $this->query("SELECT * FROM sedi ORDER BY Nome");
     while ($c = $sedi->fetch())
       array_push($result, $c);
     return $result;
   }
 
-  public function getFormatori()
-  {
+  public function getFormatori(){
     $result = [];
-    $sedi = $this->query("SELECT * FROM formatori");
+    $sedi = $this->query("SELECT * FROM formatori ORDER BY Cognome");
     while ($c = $sedi->fetch())
       array_push($result, $c);
     return $result;
   }
 
-// TODO: sistemare
+// TODO: da fare piu` carino e cuccioloso
   public function codifyError($errorCode){
     $str = "";
     $errorFlag = false;

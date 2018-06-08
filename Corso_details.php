@@ -1,12 +1,36 @@
+<?php
+  //verifica il login
+  require_once('dbHandler.php');
+  $u = new UserHandler();
+  $u->verifySession();
+  $lv = $u->getAcLv();
+
+  //preleva dati POST
+  if (isset($_POST['response'])){
+    $back = unserialize($_POST["msg"]);
+    $tmp = $back['tmp'];
+    $src = $tmp['src'];
+    $pag = $tmp['pag'];
+    $corsoId = $tmp['Id_Corso'];
+  } else {
+    $corsoId = $_POST["Id_Corso"];
+    $src = $_POST['src'];
+    $pag = $_POST['pag'];
+  }
+
+  //gestisce i dati di questa pagina
+  $d = new DetailsHandler();
+?>
+
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
     <div class="col-12">
       <div class="navbar">
-        <ul class="navbar-list-course">
+        <ul class="navbar-list">
           <li>
             <a href="https://www.isisbisuschio.gov.it/">Home</a>
           </li>
@@ -15,10 +39,6 @@
           </li>
           <!-- inserimento per moderator ed administrator -->
           <?php
-            //preleva il livello di acceso e aggiunge le funzioni relative
-            require_once('dbHandler.php');
-            $u = new UserHandler();
-            $lv = $u->getAcLv();
             if ($lv > 0) //moderator
               echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
             if ($lv > 1) //admin
@@ -35,39 +55,51 @@
 
     <div class="col-12 container">
       <?php
-        require_once("dbHandler.php");
-        require_once("Redirect.php");
-
-        if($_POST['details'] == "submit"){
-          //da comunicare per andare alla pagina precedente e non quella iniziale
-          $src = $_POST["src"];
-          $pag = $_POST["pag"];
-          $corsoId = $_POST['corsoId'];
-          $d = new DetailsHandler();
-
-          try
-          {
-            $result = $d->getCorsoDetails($corsoId);
-            $str = "Corso:$corsoId.<br>
-                    Sede: ".$result["Sede"]."<br>
-                    Formatori<br>
-                    <ul>";
-            foreach ($result["Formatori"] as $key => $value)
-              $str = $str."<li>$value</li>";
-            $str = $str."</ul>
-                  <form action='DataView.php?pag=$pag&src=$src' method='POST'>
-                    <input type='submit' name='submit' value='Torna alla tabella'>
-                  </form>";
-
-            echo $str;
-          } catch(Exception $e) {
-            echo "error ".$e;
-          }
+        $result = $d->getCorsoDetails($corsoId);
+        $str = "Corso:$corsoId.<br>
+                Sede: ".$result["Sede"]."<br>
+                Formatori<br>
+                <ul>";
+        foreach ($result["Formatori"] as $key => $value)
+          $str = $str."<li>$value</li>";
+        $str = $str."</ul>
+              <form action='DataView.php?pag=$pag&src=$src' method='POST'>
+                <input type='submit' name='submit' value='Torna alla tabella'>
+              </form>";
+        //aggunge le pagine di modifica / eliminazione per gli admin
+        if ($lv > 1){
+          //sistema $result per passare i dati del corso in un oggetto solo
+          $result['Id_Corso'] = $corsoId;
+          $str = $str."
+                <form id='deleteForm' onsubmit='return del(this)' method='POST'>
+                  <input type='hidden' name='src' value='$src'>
+                  <input type='hidden' name='pag' value='$pag'>
+                  <input type='hidden' name='Id_Corso' value='$corsoId'>
+                  <input type='submit' name='deleteC' value='Cancella Corso'>
+                </form>
+                <form action='updateCorso.php' method='POST'>
+                  <input type='hidden' name='src' value='$src'>
+                  <input type='hidden' name='pag' value='$pag'>
+                  <input type='hidden' name='Id_Corso' value='$corsoId'>
+                  <input type='submit' name='updateC' value='Modifica Corso'>
+                </form>";
         }
-        else {
-          echo "invalid page request";
-        }
+        echo $str;
       ?>
     </div>
   </body>
+  <script>
+    function del(form){
+      if(confirm("Cancellare il record?"))
+        form.action='deleteCorso.php';
+       else return false;
+      return true;
+    }
+  </script>
 </html>
+
+<?php
+  //response
+  if (isset($back))
+    echo "<script type='text/javascript'>alert('".$back['result']."');</script>";
+?>
