@@ -12,9 +12,9 @@
       <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-  <div class="container">
-    <div class="navbar">
-		<ul class="navbar-list">
+    <div class="container">
+   <div class="navbar">
+<ul class="navbar-list">
           <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
           <li>
             <a href="index.html">Home</a>
@@ -88,7 +88,7 @@
                             <input type='hidden' name='Id' value='".$record['Id']."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' value='C'>
+                            <input type='image' src='resources/trash.png' width=20 height=20>
                           </form>
                         </td>
                         <td>
@@ -96,7 +96,7 @@
                             <input type='hidden' name='person' value='".serialize($record)."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' value='U'>
+                            <input type='image' src='resources/modify.png' width=20 height=20>
                           </form>
                         </td>";
             $str = $str."</tr>";
