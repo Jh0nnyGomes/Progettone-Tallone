@@ -12,9 +12,9 @@
       <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-    <div class="">
-      <div class="">
-        <ul class="">
+  <div class="container">
+    <div class="navbar">
+		<ul class="navbar-list">
           <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
           <li>
             <a href="index.html">Home</a>
