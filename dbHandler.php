@@ -59,6 +59,7 @@ Class DbHandler {
     $cNames = substr($cNames, 0, strlen($cNames) - 2);
     $param = substr($param, 0, strlen($param) - 2);
     $query = "insert into $tabName ($cNames) values ($param)";
+
     try{
       $sth = $this->conn->prepare($query);
       $sth->execute($arrayP);
@@ -175,7 +176,7 @@ Class DataViewHandler extends DbHandler{
   }
 
   public function buildQuery($searchText){
-    $sql = "SELECT corsisicurezzadb.personale.*, corsisicurezzadb.corsi_personale.Id_Sede, corsisicurezzadb.corsi_personale.Id_Corso, corsisicurezzadb.corsi_personale.Ore, corsisicurezzadb.corsi_personale.Mod1, corsisicurezzadb.corsi_personale.Mod2, corsisicurezzadb.corsi_personale.Mod3, corsisicurezzadb.corsi_personale.Aggiornamento".
+    $sql = "SELECT corsisicurezzadb.personale.*, corsisicurezzadb.corsi_personale.*".
     " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id)".
     " where personale.CF LIKE '%$searchText%'".
     " or personale.Cognome LIKE '%$searchText%'".
@@ -357,7 +358,6 @@ Class UserHandler extends DbHandler{
     }
   }
 
-// NOTE: logga
   public function logout(){
     $this->sessionSafeStart();
     $this->logAction("Logout");
@@ -396,8 +396,7 @@ class InsertHandler extends DbHandler{
     //https://stackoverflow.com/questions/13194322/php-regex-to-check-date-is-in-yyyy-mm-dd-format
   }
 
-// NOTE: logga
-  public function addPerson($nome, $cognome, $dataNascita, $cf, $pNascita, $dateCorso, $ore, $idCorso, $sede){
+  public function addPerson($nome, $cognome, $dataNascita, $cf, $pNascita, $dateCorso, $ore, $idCorso, $sede, $protocollo){
     $errorCode = ["corso"=>false, "sede"=>false, "dateFormat"=>false, "cf"=>false, "generic"=>false];
     $interruptFlag = false;
 
@@ -454,7 +453,7 @@ class InsertHandler extends DbHandler{
     //prelevamento id record personale appena aggiunto
     $idPersonale = $this->query("SELECT Id FROM personale WHERE CF = '$cf'")->fetchColumn();
 
-    //inserimento ore e date
+    //inserimento corsi_personale
     $Field_val = [
       "Id_Sede"=>$idSede,
       "Id_Personale"=>$idPersonale,
@@ -463,7 +462,9 @@ class InsertHandler extends DbHandler{
       "Mod1"=>$dateCorso["Mod1"],
       "Mod2"=>$dateCorso["Mod2"],
       "Mod3"=>$dateCorso["Mod3"],
-      "Aggiornamento"=>$dateCorso["Aggiornamento"]
+      "Agg1"=>$dateCorso["Agg1"],
+      "Agg2"=>$dateCorso["Agg2"],
+      "Protocollo"=>$protocollo,
     ];
     if(!$this->insert("corsi_personale", $Field_val))
       $errorCode["generic"] = true;
@@ -473,7 +474,6 @@ class InsertHandler extends DbHandler{
     return ($errorCode);
   }
 
-// NOTE: logga
   public function addCorso($id, $idsFormatori){
     $errorCode = ["formatori"=>false, "corso"=>false, "generic"=>false];
     $interruptFlag = false;
@@ -518,7 +518,6 @@ class InsertHandler extends DbHandler{
     return ($errorCode);
   }
 
-// NOTE: logga
   public function addFormatore($cognome){
     //gestione errori
     $errorCode = ['formatore'=>false, 'generic'=>false];
@@ -541,7 +540,6 @@ class InsertHandler extends DbHandler{
     }
   }
 
-// NOTE: logga
   public function addSede($nome){
     //controllo nome Sede
     $s = $this->query("SELECT Nome FROM sedi WHERE Nome = '$nome'")->fetchColumn();
@@ -681,8 +679,7 @@ class InsertHandler extends DbHandler{
     return $result;
   }
 
-// TODO: da fare piu` carino e cuccioloso
-  public function codifyError($errorCode){
+  public function codifyError($errorCode){// todd: da fare piu` carino e cuccioloso
     $str = "";
     $errorFlag = false;
     foreach ($errorCode as $key => $value) {
@@ -693,6 +690,260 @@ class InsertHandler extends DbHandler{
     }
     if ($errorFlag) return $str;
     else return "Record inserito correttamente";
+  }
+}
+
+class printHandler extends DataViewHandler{
+
+  public function printCert($param){    // stampa certificati TODO: termina
+    $doc =  $this->save($corso, $sede, "Certificato");
+    /*
+    $fileContent = file_get_contents($doc);
+    try {
+      print $fileContent;
+      echo "<script>window.print();</script>";
+      return true;
+    } catch (Exception $e) {
+      return false;
+    }*/
+
+
+  }
+
+  function save($data, $filename){   //salva più file e li unisce
+    $data = array_reverse($data);
+    $merged;
+    foreach ($data as $key => $value) {
+      if (!isset($merged)) $merged = $this->savePersFile($value, $filename);
+      else {
+        $tmp = $this->savePersFile($value, "tmp");
+        $merged = $this->mergeDocs($merged, $tmp, $filename);
+      }
+    }
+    return $merged;
+  }
+
+  function saveFiltered($param, $filename){   // NOTE: da eliminare, dovrà essere usata solo saveSelect preleva da db filtrando tramite ->filter($param), poi produce un certificato per tutti, ritorna il path del certificato
+    $data = $this->filter($param);
+    return $this->save($data, $filename);
+  }
+
+  function saveSelect($ids, $filename){    //preleva da db record del personale con id€$ids, produce certificati per tutti, salva in tmp e ritorna il path
+    //prepara la query con tutti gli id
+    $query = "SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
+    " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id) ".
+    " where personale.Id = ".$ids[0];
+    for ($i=1; $i < count($ids); $i++)
+      $query = $query." or personale.Id = ".$ids[$i];
+    $query = $query." order by corsi_personale.Id_Corso, personale.Cognome";
+    $sth = $this->query($query);
+    $tab = [];
+    while($r = $sth->fetch(PDO::FETCH_ASSOC))
+      array_push($tab, $r);
+
+    $data = $this->codify($tab);
+    return $this->save($data, $filename);
+  }
+
+  function filter($param){    //preleva e normalizza i dati per la sostituzione nel doc o per il dataview
+    //query in funzione del testo cercato: se è l'unico parametro settato controlla su tutto il db, altrimenti filtra per i soliti parametri a all'interno del risultato cerca quelli col testo corrispondente
+    if ($param['Id_Sede'] != null || $param['Id_Corso'] != null || $param['dateStart'] != null || $param['dateEnd'] != null){
+      $sql = "select * from (SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
+      " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)".
+      " where corsi_personale.Id_Sede = '".$param['Id_Sede']."'".
+      " or corsi_personale.Id_Corso = '".$param['Id_Corso']."'".
+      " or corsi_personale.Mod1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Mod2 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Mod3 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Agg1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Agg2 between '".$param['dateStart']."' and '".$param['dateEnd']."') as tab".
+      " where tab.CF LIKE '%".$param['src']."%'".
+      " or tab.Cognome LIKE '%".$param['src']."%'".
+      " or tab.Nome LIKE '%".$param['src']."%'".
+      " order by tab.sede, tab.Id_Corso, tab.Cognome";
+    }else{
+      $sql = "SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
+      " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)".
+      " where corsi_personale.Id_Sede = '".$param['Id_Sede']."'".
+      " or corsi_personale.Id_Corso = '".$param['Id_Corso']."'".
+      " or corsi_personale.Mod1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Mod2 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Mod3 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Agg1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
+      " or corsi_personale.Agg2 between '".$param['dateStart']."' and '".$param['dateEnd']."'";
+      if (strlen($param['src']) > 0){
+        $sql = $sql.
+        " or personale.CF LIKE '%".$param['src']."%'".
+        " or personale.Cognome LIKE '%".$param['src']."%'".
+        " or personale.Nome LIKE '%".$param['src']."%'";
+      }
+      $sql = $sql." order by sede, corsi_personale.Id_Corso, personale.Cognome";
+    }
+
+    $sth = $this->query($sql);
+    if ($sth == null) return;
+    $tab = [];
+    while($r = $sth->fetch(PDO::FETCH_ASSOC))
+      array_push($tab, $r);
+
+    return $this->codify($tab);
+  }
+
+  function codify($tab){    //riceve in $tab un array di record del db -> li converte in dati digeribili dalle altre funzioni per salvarli su file
+    //prepara l'array con i risultati
+    $filtered = [];
+    $pers = [];
+    foreach ($tab as $record) {
+      $pers['name'] = $record["Nome"];$record["Cognome"];
+      $pers['surname'] = $record["Cognome"];
+      $pers['cf'] = $record["CF"];
+      $pers['birth_place'] = $record["ComuneNascita"];
+      $pers['birth_date'] = $record["DataNascita"];
+      $pers['tot_ore'] = $record["Ore"];
+      $pers['mod1'] = $record["Mod1"];
+      $pers['mod2'] = $record["Mod2"];
+      $pers['mod3'] = $record["Mod3"];
+      $pers['agg1'] = $record["Agg1"];
+      $pers['agg2'] = $record["Agg2"];
+      $pers['protocollo'] = $record["Protocollo"];
+      $pers['id'] = $record["Id"];
+      $pers['sede'] = $record["sede"];
+      $pers['corso'] = $record["Id_Corso"];
+
+      array_push($filtered, $pers);
+    }
+    return $filtered;
+  }
+
+  public function savePersFile($pers, $name){   //salva i dati di $pers in un file "$name.doc", ritorna il path del file
+    $template_file_name = getcwd().'\resources\master.doc';
+    $tmpFile = getcwd().'\\tmp\\'.$name.'.doc';
+
+    //Copy the Template file to the Result Directory
+    copy($template_file_name, $tmpFile);
+
+    // add class Zip Archive
+    $zip_val = new ZipArchive;
+
+    //Docx file is nothing but a zip file. Open this Zip File
+    if($zip_val->open($tmpFile) == true)
+    {
+        // In the Open XML Wordprocessing format content is stored.
+        // In the document.xml file located in the word directory.
+
+        $key_file_name = 'word/document.xml';
+        $xml = $zip_val->getFromName($key_file_name);
+
+        $timestamp = date('d/m/Y');
+
+        // this data Replace the placeholders with actual values
+        $xml = str_replace("[name]", $pers["name"]." ".$pers["surname"], $xml);
+        $xml = str_replace("[cf]", $pers["cf"], $xml);
+        $xml = str_replace("[birth_place]", $pers["birth_place"], $xml);
+        $xml = str_replace("[birth_date]", $pers["birth_date"], $xml);
+        $xml = str_replace("[tot_ore]", $pers["tot_ore"], $xml);
+        $xml = str_replace("[mod1]", $pers["mod1"], $xml);
+        $xml = str_replace("[mod2]", $pers["mod2"], $xml);
+        $xml = str_replace("[mod3]", $pers["mod3"], $xml);
+        $xml = str_replace("[agg]", $pers["agg"], $xml);
+        $xml = str_replace("[sede]", $pers["sede"], $xml);
+        $xml = str_replace("[id]", $pers["id"], $xml);
+        $xml = str_replace("[date]", $timestamp, $xml);
+
+        //Replace the content with the new content created above.
+        $zip_val->addFromString($key_file_name, $xml);
+        $zip_val->close();
+
+        return $tmpFile;
+    }
+  }
+
+  function mergeDocs($doc1, $doc2, $name){    //attacca doc1 in fondo a doc2 in una nuova pagina
+
+    include_once('\resources\tbszip.php');
+
+    $zip = new clsTbsZip();
+
+    // Open the first document
+    $zip->Open($doc1);
+    $content1 = $zip->FileRead('word/document.xml');
+    $zip->Close();
+
+    // Extract the content of the first document
+    $p = strpos($content1, '<w:body');
+    if ($p===false) exit("Tag <w:body> not found in document 1.");
+    $p = strpos($content1, '>', $p);
+    $content1 = substr($content1, $p+1);
+    $p = strpos($content1, '</w:body>');
+    if ($p===false) exit("Tag </w:body> not found in document 1.");
+    $content1 = '<w:p><w:r><w:br w:type="page" /><w:lastRenderedPageBreak/></w:r></w:p>'.substr($content1, 0, $p);  //page break
+
+    // Insert into the second document
+    $zip->Open($doc2);
+    $content2 = $zip->FileRead('word/document.xml');
+    $p = strpos($content2, '</w:body>');
+    if ($p===false) exit("Tag </w:body> not found in document 2.");
+    $content2 = substr_replace($content2, $content1, $p, 0);
+    $zip->FileReplace('word/document.xml', $content2, TBSZIP_STRING);
+
+    // Save the merge into a third file
+    $filePath = 'tmp\\'.$name.'.doc';
+    $zip->Flush(TBSZIP_FILE, $filePath);
+    return getcwd()."\\".$filePath;
+  }
+
+  public function download($filePath, $filename){    //forza il download del file via header e ritorna l'esito
+
+    if(!file_exists($filePath)){ // file does not exist
+        return false;
+    } else {
+        header("Cache-Control: public");
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=$filename.doc");
+        header("Content-Type: application/zip");
+        header("Content-Transfer-Encoding: binary");
+
+        // read the file from disk
+        readfile($filePath);
+        return true;
+    }
+  }
+
+  function convertToPDF($file){   // TODO: sistemare, non va
+    /*php word -> non funziona
+    include_once('\resources\PhpWord\Settings.php');
+    include_once('\resources\PhpWord\PhpWord.php');
+    include_once('\resources\PhpWord\Media.php');
+    include_once('\resources\PhpWord\Style.php');
+    include_once('\resources\PhpWord\Collection\AbstractCollection.php');
+    include_once('\resources\PhpWord\Collection\Bookmarks.php');
+    include_once('\resources\PhpWord\Collection\Titles.php');
+    include_once('\resources\PhpWord\Collection\Footnotes.php');
+    include_once('\resources\PhpWord\Collection\EndNotes.php');
+    include_once('\resources\PhpWord\Collection\Charts.php');
+    include_once('\resources\PhpWord\Collection\Comments.php');
+    include_once('\resources\PhpWord\Metadata\DocInfo.php');
+    include_once('\resources\PhpWord\Metadata\Settings.php');
+    include_once('\resources\PhpWord\Metadata\Compatibility.php');
+    include_once('\resources\PhpWord\TemplateProcessor.php');
+    include_once('\resources\PhpWord\Shared\ZipArchive.php');*/
+
+    \PhpOffice\PhpWord\Settings::setPdfRendererPath('/resources/TCPDF');
+    \PhpOffice\PhpWord\Settings::setPdfRendererName('TCPDF');
+
+    $phpWord = new \PhpOffice\PhpWord\PhpWord();
+
+    //Open template and save it as docx
+    $document = $phpWord->loadTemplate($file);
+    $document->saveAs('temp.docx');
+
+    //Load temp file
+    $phpWord = \PhpOffice\PhpWord\IOFactory::load('temp.docx');
+
+    //Save it
+    $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord , 'PDF');
+    $xmlWriter->save('result.pdf');
+    //return $file;
   }
 }
 ?>

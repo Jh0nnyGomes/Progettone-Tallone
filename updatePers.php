@@ -32,9 +32,9 @@
 </head>
 
 <body>
-   <div class="container">
-    <div class="navbar">
-<ul class="navbar-list">
+  <div class="container">
+     <div class="navbar">
+ <ul class="navbar-list">
               <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
               <li>
                   <a href="index.html">Home</a>
@@ -99,7 +99,10 @@
                       <input type='date' name='Mod1' placeholder='Mod1' value='".$tmp['Mod1']."' class=''>
                       <input type='date' name='Mod2' placeholder='Mod2' value='".$tmp['Mod2']."' class=''>
                       <input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class=''>
-                      <input type='date' name='Aggiornamento' placeholder='Aggiornamento' value='".$tmp['Aggiornamento']."' class=''>
+                      <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
+                      <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
+                      <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><br>
+
                       <br>
                       <input type='hidden' name='src' value='$src'>
                       <input type='hidden' name='pag' value='$pag'>

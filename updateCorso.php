@@ -6,7 +6,7 @@
   $u->verifySession();
   $lv = $u->getAcLv();
   //ulteriore controllo sul livello di Accesso
-  if ($lv < 2) {
+  if ($lv < 1) {
     echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
     require_once("Redirect.php");
     goToDataView();
@@ -35,9 +35,9 @@
 </head>
 
 <body>
- <div class="container">
-    <div class="navbar">
-<ul class="navbar-list">
+  <div class="container">
+     <div class="navbar">
+ <ul class="navbar-list">
               <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
               <li>
                   <a href="index.html">Home</a>
