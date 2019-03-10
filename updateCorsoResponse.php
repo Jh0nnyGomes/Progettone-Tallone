@@ -6,7 +6,7 @@
   $ins = new InsertHandler();
 
   //ulteriore controllo sul livello di Accesso
-  if ($u->getAcLv() < 2) {
+  if ($u->getAcLv() < 1) {
     echo "<script type='text/javascript'>alert('Livello di accesso non valido');</script>";
     require_once("Redirect.php");
     goToDataView();

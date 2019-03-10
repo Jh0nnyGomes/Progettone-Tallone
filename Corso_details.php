@@ -37,15 +37,19 @@
           <li>
             <a href="DataView.php">Tabella</a>
           </li>
+          <li>
+            <a href="PrintFilter.php">Stampa</a>
+          </li>
           <!-- inserimento per moderator ed administrator -->
           <?php
-            if ($lv > 0) //moderator
+            if ($lv > 0){
               echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-            if ($lv > 1) //admin
               echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+            }
           ?>
         </ul>
         <ul class="logout-bar">
+          <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
           <!-- Logout -->
           <li>
             <a href="LogoutResponse.php">Logout</a>
@@ -67,7 +71,7 @@
                 <input type='submit' name='submit' value='Torna alla tabella'>
               </form>";
         //aggunge le pagine di modifica / eliminazione per gli admin
-        if ($lv > 1){
+        if ($lv > 0){
           //sistema $result per passare i dati del corso in un oggetto solo
           $result['Id_Corso'] = $corsoId;
           $str = $str."

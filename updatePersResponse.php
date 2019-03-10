@@ -27,14 +27,12 @@
   $param_c['Mod1'] = $ins->isDate($_POST["Mod1"]) ? $_POST["Mod1"] : null;
   $param_c['Mod2'] = $ins->isDate($_POST["Mod2"]) ? $_POST["Mod2"] : null;
   $param_c['Mod3'] = $ins->isDate($_POST["Mod3"]) ? $_POST["Mod3"] : null;
-  $param_c['Aggiornamento'] = $ins->isDate($_POST["Aggiornamento"]) ? $_POST["Aggiornamento"] : null;
+  $param_c['Agg1'] = $ins->isDate($_POST["Agg1"]) ? $_POST["Agg1"] : null;
+  $param_c['Agg2'] = $ins->isDate($_POST["Agg2"]) ? $_POST["Agg2"] : null;
+  $param_c['Protocollo'] = $_POST["Protocollo"];
 
   //controlla i campi ed evita di inviare campi non modificati
-  $db = new DbHandler();
-  $p = $db->query("
-    SELECT personale.*, corsi_personale.Id_Sede, corsi_personale.Id_Corso, corsi_personale.Ore, corsi_personale.Mod1, corsi_personale.Mod2, corsi_personale.Mod3, corsi_personale.Aggiornamento
-    FROM corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.id)
-    WHERE corsi_personale.Id_Personale = $id")->fetch();
+  $p = $ins->getPersona($id);
 
   $paramCorso = [];
   $paramPersona = [];

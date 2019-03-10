@@ -13,19 +13,23 @@
   </head>
   <body>
     <div class="container">
-   <div class="navbar">
-<ul class="navbar-list">
+      <div class="navbar">
+        <ul class="navbar-list">
           <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
           <li>
             <a href="index.html">Home</a>
           </li>
-          <!-- inserimento per moderator ed administrator -->
+          <li>
+            <a href="PrintFilter.php">Stampa</a>
+          </li>
+          <!-- inserimento per administrator -->
           <?php
-            //Moderator & admin
-            if ($lv > 0)
+            // admin
+            if ($lv > 0){
               echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-            if ($lv > 1)
               echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+
+            }
           ?>
           <!-- SearchBar -->
           <form action="DataView.php" method="get">
@@ -33,9 +37,10 @@
             <input type="submit" value="Cerca" class="searchbtn" />
           </form>
         </ul>
-        <ul class="logout-bar">
-          <!-- Logout -->
+          <ul class="logout-bar">
+          <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
           <li>
+            <!-- Logout -->
             <a href="LogoutResponse.php">Logout</a>
           </li>
         </ul>
@@ -57,7 +62,9 @@
                   "<th scope='col'>Mod1</th>".
                   "<th scope='col'>Mod2</th>".
                   "<th scope='col'>Mod3</th>".
-                  "<th scope='col'>Aggiornamento</th>".
+                  "<th scope='col'>Aggiornamento 1</th>".
+                  "<th scope='col'>Aggiornamento 2</th>".
+                  "<th scope='col'>Protocollo</th>".
                 "</tr>".
             "</thead>".
             "<tbody>";
@@ -81,14 +88,16 @@
                 <td>".$record['Mod1']."</td>
                 <td>".$record['Mod2']."</td>
                 <td>".$record['Mod3']."</td>
-                <td>".$record['Aggiornamento']."</td>";
+                <td>".$record['Agg1']."</td>
+                <td>".$record['Agg2']."</td>
+                <td>".$record['Protocollo']."</td>";
           if ($lv > 0)
             $str = $str."<td>
                           <form id='$i-deleteP' onclick='del(this)' method='post'>
                             <input type='hidden' name='Id' value='".$record['Id']."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' src='resources/trash.png' width=20 height=20>
+                            <input type='image' src='resources/img/trash.png' width=20 height=20>
                           </form>
                         </td>
                         <td>
@@ -96,9 +105,18 @@
                             <input type='hidden' name='person' value='".serialize($record)."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' src='resources/modify.png' width=20 height=20>
+                            <input type='image' src='resources/img/modify.png' width=20 height=20>
                           </form>
                         </td>";
+            $str = $str."<td>
+              <form action='PrintFilterResponse.php' method='post'>
+                <input type='hidden' name='id' value='".$record['Id']."'>
+                <input type='hidden' name='scope' value='download'>
+                <input type='hidden' name='src' value='$src'>
+                <input type='hidden' name='pag' value='$pag'>
+                <input type='image' src='resources/img/download.png' width=20 height=20>
+              </form>
+            </td>";
             $str = $str."</tr>";
         }
         $str = $str."</tbody> </table> <div class='pagcontainer'>";
@@ -109,7 +127,7 @@
           $echo;
           //Setta la pagina precedente
           if(isset($l['prev']))
-            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo;</a>";
 
           //Setta la prima pagina
           if(isset($l['src']) && $pag != 1)
@@ -129,7 +147,7 @@
 
           //Setta la pagina successiva
           if(isset($l['next']))
-            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
+            $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">&raquo;</a>";
 
           $str = $str.$echo;
       }

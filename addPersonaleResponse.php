@@ -20,12 +20,13 @@
   $idCorso = $_POST["Id_Corso"];
   $idSede = $_POST["Id_Sede"];
   $ore = (int)$_POST["Ore"];
-  $dateCorso = ['Mod1'=>$_POST["Mod1"], 'Mod2'=>$_POST["Mod2"], 'Mod3'=>$_POST["Mod3"], 'Aggiornamento'=>$_POST["Aggiornamento"]];
+  $dateCorso = ['Mod1'=>$_POST["Mod1"], 'Mod2'=>$_POST["Mod2"], 'Mod3'=>$_POST["Mod3"], 'Agg1'=>$_POST["Agg1"], 'Agg2'=>$_POST["Agg2"]];
+  $protocollo = $_POST["Protocollo"];
 
   //inserisce i dati e ritorna l'esito per POST
   $h = new InsertHandler();
   $back = [];
-  $result = $h->addPerson($nome, $cognome, $dataNascita, $cf, $luogoNascita, $dateCorso, $ore, $idCorso, $idSede);
+  $result = $h->addPerson($nome, $cognome, $dataNascita, $cf, $luogoNascita, $dateCorso, $ore, $idCorso, $idSede, $protocollo);
 
   //se trova errori ritorna il post con i dati precedentemente inseriti
   foreach ($result as $key => $value) {

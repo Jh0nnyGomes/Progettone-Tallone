@@ -26,19 +26,21 @@
               <li>
                   <a href="index.html">Home</a>
               </li>
+              <li>
+                  <a href="index.html">Tabella</a>
+              </li>
+              <li>
+                <a href="PrintFilter.php">Stampa</a>
+              </li>
               <!-- inserimento per moderator ed administrator -->
               <?php
               //Moderator & admin
-              if ($u->getAcLv() > 1)
+              if ($u->getAcLv() > 0)
                 echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
               ?>
-              <!-- SearchBar -->
-              <form action="DataView.php" method="get">
-                  <input type="text" name="src" placeholder="Cerca" value="<?php echo (isset($_GET['src'])) ? $_GET['src'] : ''; ?>" class="searchbox" />
-                  <input type="submit" value="Cerca" class="searchbtn" />
-              </form>
           </ul>
           <ul class="logout-bar">
+              <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
               <!-- Logout -->
               <li>
                   <a href="LogoutResponse.php">Logout</a>
@@ -92,7 +94,9 @@
                       <p>Mod 1<input type='date' name='Mod1' placeholder='Mod1' value='".$tmp['Mod1']."' class='mod-date'><br>
                       <p>Mod 2<input type='date' name='Mod2' placeholder='Mod2' value='".$tmp['Mod2']."' class='mod-date'><br>
                       <p>Mod 3<input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class='mod-date'><br>
-                      <p>Aggiornamento<input type='date' name='Aggiornamento' placeholder='Aggiornamento' value='".$tmp['Aggiornamento']."' class='mod-date'></p><br>
+                      <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
+                      <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
+                      <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><br>
                       <input type='submit' name='submit' value='Aggiungi' class='addstaff'>
                     </form>";
 

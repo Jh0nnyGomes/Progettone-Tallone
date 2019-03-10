@@ -32,31 +32,34 @@
 </head>
 
 <body>
-   <div class="container">
-    <div class="navbar">
-<ul class="navbar-list">
-              <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
-              <li>
-                  <a href="index.html">Home</a>
-              </li>
-              <!-- inserimento per moderator ed administrator -->
-              <?php
-              //Moderator & admin
-              if ($u->getAcLv() > 1)
-                echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
-              ?>
-              <!-- SearchBar -->
-              <form action="DataView.php" method="get">
-                  <input type="text" name="src" placeholder="Cerca" value="<?php echo (isset($_GET['src'])) ? $_GET['src'] : ''; ?>" class="searchbox" />
-                  <input type="submit" value="Cerca" class="searchbtn" />
-              </form>
-          </ul>
-          <ul class="logout-bar">
-              <!-- Logout -->
-              <li>
-                  <a href="LogoutResponse.php">Logout</a>
-              </li>
-          </ul>
+  <div class="container">
+     <div class="navbar">
+         <ul class="navbar-list">
+           <li>
+               <a href="index.html">Home</a>
+           </li>
+           <li>
+             <a href="DataView.php">Tabella</a>
+           </li>
+           <li>
+             <a href="PrintFilter.php">Stampa</a>
+           </li>
+           <!-- inserimento per administrator -->
+           <?php
+             // admin
+             if ($lv > 0){
+               echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
+               echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+             }
+           ?>
+        </ul>
+        <ul class="logout-bar">
+         <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
+           <!-- Logout -->
+           <li>
+               <a href="LogoutResponse.php">Logout</a>
+           </li>
+        </ul>
       </div>
 
     <div class="row">
@@ -78,11 +81,13 @@
                     $i = new InsertHandler();
                     $l = $i->getCorsi();
                     $str = $str."<select name='Id_Corso'> <option value='' disabled selected>Corso</option> ";
-                    foreach ($l as $key => $value)
-                      if ($value == $tmp['Id_Corso'] && isset($value))
+                    foreach ($l as $key => $value){
+                      echo "<script>console.log('".($value)."')</script>";
+                      if ($value === $tmp['Id_Corso'])
                         $str = $str."<option selected='selected' value='".$value."'>".$value."</option> ";
                       else
                         $str = $str."<option value='".$value."'>".$value."</option> ";
+                      }
                     $str = $str."</select> ";
 
                     //lista sedi
@@ -99,7 +104,10 @@
                       <input type='date' name='Mod1' placeholder='Mod1' value='".$tmp['Mod1']."' class=''>
                       <input type='date' name='Mod2' placeholder='Mod2' value='".$tmp['Mod2']."' class=''>
                       <input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class=''>
-                      <input type='date' name='Aggiornamento' placeholder='Aggiornamento' value='".$tmp['Aggiornamento']."' class=''>
+                      <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
+                      <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
+                      <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><br>
+
                       <br>
                       <input type='hidden' name='src' value='$src'>
                       <input type='hidden' name='pag' value='$pag'>
@@ -115,6 +123,25 @@
             </div>
         </div>
     </div>
+    <script>
+    setAll();
+    function setAll(){
+      var all = document.getElementsByTagName('input');
+      for (n of all)
+        if(n.type == 'date')
+          n.max = today();
+    }
+    function today(){
+      var D = new Date(),
+          m = '' + (D.getMonth() + 1),
+          d = '' + D.getDate(),
+          y = '' + D.getFullYear();
+      if (m.length < 2) m = '0' + m;
+      if (d.length < 2) d = '0' + d;
+      var today = [y, m, d].join('-');
+      return today;
+    }
+    </script>
 </body>
 </html>
 
