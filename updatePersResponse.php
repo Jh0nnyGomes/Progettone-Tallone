@@ -32,11 +32,7 @@
   $param_c['Protocollo'] = $_POST["Protocollo"];
 
   //controlla i campi ed evita di inviare campi non modificati
-  $db = new DbHandler();
-  $p = $db->query("
-    SELECT personale.*, corsi_personale.*
-    FROM corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.id)
-    WHERE corsi_personale.Id_Personale = $id")->fetch();
+  $p = $ins->getPersona($id);
 
   $paramCorso = [];
   $paramPersona = [];

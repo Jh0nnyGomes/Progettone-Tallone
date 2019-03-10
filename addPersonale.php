@@ -26,19 +26,21 @@
               <li>
                   <a href="index.html">Home</a>
               </li>
+              <li>
+                  <a href="index.html">Tabella</a>
+              </li>
+              <li>
+                <a href="PrintFilter.php">Stampa</a>
+              </li>
               <!-- inserimento per moderator ed administrator -->
               <?php
               //Moderator & admin
-              if ($u->getAcLv() > 1)
+              if ($u->getAcLv() > 0)
                 echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
               ?>
-              <!-- SearchBar -->
-              <form action="DataView.php" method="get">
-                  <input type="text" name="src" placeholder="Cerca" value="<?php echo (isset($_GET['src'])) ? $_GET['src'] : ''; ?>" class="searchbox" />
-                  <input type="submit" value="Cerca" class="searchbtn" />
-              </form>
           </ul>
           <ul class="logout-bar">
+              <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
               <!-- Logout -->
               <li>
                   <a href="LogoutResponse.php">Logout</a>

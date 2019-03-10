@@ -34,6 +34,7 @@
                     ?>
                 </ul>
                 <ul class="logout-bar">
+                    <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
                     <!-- Logout -->
                     <li>
                         <a href="LogoutResponse.php">Logout</a>
@@ -52,23 +53,27 @@
           //lista corsi
           $i = new InsertHandler();
           $l = $i->getCorsi();
-          $str = $str."<select name='Id_Corso' onchange=filter()> <option value='' disabled selected>Filtra per corso</option> ";
+          $str = $str."<select name='Id_Corso' onchange=filter()> <option value='-1' disabled selected>Filtra per corso</option> ";
           foreach ($l as $key => $value){
-            $str = $str."<option value='".$value."'";
-            if ($value == $_POST["Id_Corso"])
-              $str = $str." selected ";
-            $str = $str."'>".$value."</option> ";
+            if ($value != null){
+              $str = $str."<option value='".$value."'";
+              if ($value == $_POST["Id_Corso"])
+                $str = $str." selected ";
+              $str = $str."'>".$value."</option> ";
+            }
           }
           $str = $str."</select>";
 
           //lista sedi
           $l = $i->getSedi();
-          $str = $str." <select name='Id_Sede' onchange=filter()> <option value='' disabled selected>Sede</option> ";
+          $str = $str." <select name='Id_Sede' onchange=filter()> <option value='-1' disabled selected>Sede</option> ";
           foreach ($l as $key => $value){
-            $str = $str." <option value='".$value['id']."'";
-            if ($value['id'] == $_POST["Id_Sede"])
-              $str = $str." selected ";
-            $str = $str.">".$value['Nome']."</option> ";
+            if ($value != ''){
+              $str = $str." <option value='".$value['id']."'";
+              if ($value['id'] == $_POST["Id_Sede"])
+                $str = $str." selected ";
+              $str = $str.">".$value['Nome']."</option> ";
+            }
           }
 
           //periodo
@@ -155,42 +160,12 @@
                 <td>".$record['mod1']."</td>
                 <td>".$record['mod2']."</td>
                 <td>".$record['mod3']."</td>
-                <td>".$record['Agg1']."</td>
-                <td>".$record['Agg2']."</td>
-                <td>".$record['Protocollo']."</td></tr>";
+                <td>".$record['agg1']."</td>
+                <td>".$record['agg2']."</td>
+                <td>".$record['protocollo']."</td></tr>";
             }
             $str = $str."</tbody> </table> <div class='pagcontainer'>";
-  /*INDICI PIE PAGINA
-            //Stampa gli indici a pie' di pagina
-            $l = $pt_handler->getPagLinks();
-            if ($l != null){
-              $echo;
-              //Setta la pagina precedente
-              if(isset($l['prev']))
-                $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['prev'] .'&src='.$l["src"]. "\">&laquo; Previous</a>";
 
-              //Setta la prima pagina
-              if(isset($l['src']) && $pag != 1)
-                $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=0&src=".$l["src"]. "\">...</a>";
-
-              //setta gli indici delle 5 pagine succesive
-              foreach ($pt_handler->getPagLinks() as $key => $value) {
-                if ($key != 'src' && $key != 'prev' && $key != 'next' && $key != '...'){
-                  $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $value .'&src='.$l["src"]. "\">".$value."</a>";
-                  unset($value);
-                }
-              }
-
-              //Setta [...]
-              if(isset($l['...']))
-                $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['...'] .'&src='.$l["src"]. "\">...</a>";
-
-              //Setta la pagina successiva
-              if(isset($l['next']))
-                $echo = $echo."<a class = 'page-btn'  href=\"" . $_SERVER['PHP_SELF'] . "?pag=" . $l['next'] .'&src='.$l["src"]. "\">Next &raquo;</a>";
-
-              $str = $str.$echo;
-          }*/
             $str = $str."</div></form>";
             echo $str;
           }
@@ -240,6 +215,7 @@
           document.getElementsByName("dateEnd")[0].value = null;
           document.getElementsByName("Id_Corso")[0].selectedIndex  = -1;
           document.getElementsByName("Id_Sede")[0].selectedIndex  = -1;
+          filter();
         }
         function filter() {   //ricarica la tabella(la pagina) filtrando
           document.getElementById('filterForm').submit();
@@ -248,6 +224,11 @@
           //ricava i record segnati (le checkBox contengono gli id del personale)
           var data = [];
           var cbx = document.getElementsByName('cbx');
+
+          if (cbx.length == 0) {
+            alert('nessun record selezionato');
+            return;
+          }
 
           for (var i = 0; i < cbx.length; i++)
             if (cbx[i].checked)
@@ -259,7 +240,7 @@
           //invia al response
           var sub =  document.getElementById('subDataForm');
           sub.elements.namedItem('ids').value = send;
-          sub.elements.namedItem('scope').value = "save";
+          sub.elements.namedItem('scope').value = "download";
           sub.submit();
         }
         function confirmBox(id){
@@ -271,30 +252,10 @@
             var send = JSON.stringify(Object.assign({}, data));
             var sub = document.getElementById('subDataForm');
             sub.elements.namedItem('ids').value = send;
-            sub.elements.namedItem('scope').value = "save";
+            sub.elements.namedItem('scope').value = "download";
             sub.submit();
           }
         }
-
-        /* DEPRECATA
-        controlla se ci sono record segnati, se non ce ne sono certifica secondo i prarametri nei filtri
-
-        function send(){
-          //controlla se tra i risultati ne compare qualcuno segnato
-          var list = document.querySelectorAll("input[name=cbx]");
-          var selectFlag = false;
-          for (var i = 0; i < list.length; i++)
-            if (list[i].checked){
-              selectFlag = true;
-              break;
-            }
-
-          if (selectFlag) saveSelectded();
-          else {
-            <?php //$_POST["save"] = true ?> // TODO: implementare la Stampa
-            document.getElementById('firstform').submit();
-          }
-        }*/
       </script>
 
     </body>

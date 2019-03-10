@@ -25,7 +25,7 @@ Class DbHandler {
     }
   }
 
-  public function countRows($tabName, $filter){
+  public function countRows($tabName, $filter){   // WARNING: FRAGILE ALL'INJECTION
     try {
       $sth = $this->query("SELECT count(*) FROM ".$tabName." ".$filter);
       return $sth->fetchColumn();
@@ -35,7 +35,7 @@ Class DbHandler {
     }
   }
 
-  public function query($query){
+  public function query($query){    // WARNING: DA UTILIZZARE SENZA PARAMETRIINSERITI RICEVUTI DALL'UTENTE, É FRAGILE ALL' INJECTION
     try {
       $sth = $this->conn->prepare($query);
       $sth->execute();
@@ -43,6 +43,17 @@ Class DbHandler {
     }
     catch(PDOException $e){
       return null;
+    }
+  }
+
+  public function sQuery($query, $param){ //permette di eseguire una query sicura
+    try {
+      $sth = $this->conn->prepare($query);
+      $sth->execute($param);
+      return $sth;
+    }
+    catch(PDOException $e){
+      return $e;
     }
   }
 
@@ -71,10 +82,28 @@ Class DbHandler {
     }
   }
 
-  public function delete($tabName, $id_field, $id_value){
-    $param = [':'.$id_field=>$id_value];
+  public function delete($tabName, $wParam){ // DEBUG:
+
+    //sistema la stringa di condizione e l'array con i prarametri
+    $param = [];
+    $q = '';
+    foreach ($wParam as $key => $value){
+      if (is_array($value)) { //associa ad ogni valore nel subArray un campo numerato per l'array associativo
+        $i = 0;
+        foreach ($value as $subVal) {
+          $q = $q." $key = :$key"."_$i or";
+          $param[$key."_$i"] = $subVal;
+          $i++;
+        }
+      } else {
+        $q = $q." $key = :$key or";
+        $param[$key] = $value;
+      }
+    }
+    $q = substr($q, 0, -2);
+
     try {
-      $query = "delete from $tabName where $id_field = :$id_field";
+      $query = "delete from $tabName where $q";
       $del = $this->conn->prepare($query);
       $del->execute($param);
       return ['deleted'=>$del->rowCount()];
@@ -83,27 +112,17 @@ Class DbHandler {
     }
   }
 
-  protected function delWhere($tabName, $condition){
-    try {
-      $query = "delete from $tabName where $condition";
-      $del = $this->conn->prepare($query);
-      $del->execute($param);
-      return ['deleted'=>$del->rowCount()];
-    } catch (PDOException $e) {
-      return ['error'=>$e];
-    }
-  }
-
-  public function update($tabName, $columns_values, $id_Field_Value){
+  public function update($tabName, $columns_values, $id_Field_Value){ // WARNING: $tabName non deve essere ricevuto dall'esterno
     $str;
     $arrayP = [];
     $arrayP[':'.$id_Field_Value['field']] = $id_Field_Value['value'];
     foreach ($columns_values as $key => $value) {
-      $str = $str."$key=:$key, ";
-      $arrayP[':'.$key] = $value;
+      $str = $str."$key=:$key"."_v, ";  //_v nel caso alcuni parametri da aggiornare fossero uguali a quelli del where
+      $arrayP[':'.$key."_v"] = $value;
     }
     $str = substr($str, 0, strlen($str) - 2);
     $query = "update $tabName set $str where ".$id_Field_Value['field']."=:".$id_Field_Value['field'];
+
     try{
       $sth = $this->conn->prepare($query);
       $sth->execute($arrayP);
@@ -140,15 +159,17 @@ Class DetailsHandler extends DbHandler{
   function getCorsoDetails($corsoId){
     //PRELEVA I NOMI DEI FORMATORI
     $result = [];
-    $nfQuery = $this->query(
+    $nfQuery = $this->sQuery(
       "SELECT distinct Cognome
       from formatori join corsi_formatori on Id = Id_Formatore
-      where Id_Corso = '$corsoId'"
+      where Id_Corso = :corsoId",
+      ["corsoId" => $corsoId]
       );
-    $sede = $this->query(
+    $sede = $this->sQuery(
       "SELECT distinct Nome
       from sedi join corsi_personale on Id = Id_Sede
-      where Id_Corso = '$corsoId'"
+      where Id_Corso = :corsoId",
+      ["corsoId" => $corsoId]
       )->fetchColumn();
 
     $nomiFormatori = [];
@@ -168,33 +189,19 @@ Class DataViewHandler extends DbHandler{
 
   function __construct(){
     parent::__construct();
+    $sql =
+    "SELECT count(personale.Id)
+     from corsi_personale, personale
+     where corsi_personale.Id_Personale = personale.Id
+     and ( personale.CF LIKE :src
+     or personale.Cognome LIKE :src
+     or personale.Nome LIKE :src
+     or corsi_personale.Id_Corso LIKE :src )";
     $search = $this->getSearchedText();
-    $this->all_rows = $this->query($this->countQuery($search))->fetchColumn();
+    $this->all_rows = $this->sQuery($sql, ['src'=>"%$search%"])->fetchColumn();
     $this->x_pag = $this->getRecordPerPag();
     $this->all_pages = ceil($this->all_rows / $this->x_pag);
     //DEBUG echo "all_rows:".$this->all_rows." x_pag:".$this->x_pag."all_pages:".$this->all_pages;
-  }
-
-  public function buildQuery($searchText){
-    $sql = "SELECT corsisicurezzadb.personale.*, corsisicurezzadb.corsi_personale.*".
-    " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id)".
-    " where personale.CF LIKE '%$searchText%'".
-    " or personale.Cognome LIKE '%$searchText%'".
-    " or personale.Nome LIKE '%$searchText%'".
-    " or corsi_personale.Id_Corso LIKE '%$searchText%'".
-    " order by corsi_personale.Id_Corso, personale.Cognome";
-    return $sql;
-  }
-
-  public function countQuery($searchText){
-    $sql = "SELECT count(corsisicurezzadb.personale.Id)".
-    " from corsi_personale, personale".
-    " where corsisicurezzadb.corsi_personale.Id_Personale = corsisicurezzadb.personale.Id".
-    " and ( personale.CF LIKE '%$searchText%'".
-    " or personale.Cognome LIKE '%$searchText%'".
-    " or personale.Nome LIKE '%$searchText%'".
-    " or corsi_personale.Id_Corso LIKE '%$searchText%' )";
-    return $sql;
   }
 
   public function getSearchedText(){
@@ -217,7 +224,18 @@ Class DataViewHandler extends DbHandler{
 
   public function search(){
     $first = ($this->getPag()-1) * $this->x_pag;
-    $sth = $this->query($this->buildQuery($this->getSearchedText()).' LIMIT '.$first.', '.$this->x_pag);
+    $searchText = $this->getSearchedText();
+    $sql =
+    "SELECT personale.*, corsi_personale.*
+     from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id)
+     where personale.CF LIKE :src
+     or personale.Cognome LIKE :src
+     or personale.Nome LIKE :src
+     or corsi_personale.Id_Corso LIKE :src
+     order by corsi_personale.Id_Corso, personale.Cognome
+     LIMIT $first, ".$this->x_pag;
+
+    $sth = $this->sQuery($sql, ['src'=>"%$searchText%"]);
     $tab = [];
     while($r = $sth->fetch(PDO::FETCH_ASSOC))
       array_push($tab, $r);
@@ -282,13 +300,9 @@ Class UserHandler extends DbHandler{
   // NOTE:usa l'md5
   public function login($user, $psw){
     //preleva la psw dove l'email o lo username sono uguali a quello inserito
-    $query;
-    if (strpos($user, '@'))
-      $query = "select ".$this->pswField.", ".$this->accessLvField." from ".$this->tabName." where ".$this->emailField.' = "'.$user.'"';
-    else
-      $query = "select ".$this->pswField.", ".$this->accessLvField." from ".$this->tabName." where ".$this->usrField.' = "'.$user.'"';
+    $query = "select ".$this->pswField.", ".$this->accessLvField." from ".$this->tabName." where ".$this->usrField.' = :user';
 
-    $qPsw = $this->query($query);
+    $qPsw = $this->sQuery($query, ['user' => $user]);
 
     //"username o email non trovato"
     if ($qPsw->rowCount() < 1)
@@ -335,7 +349,7 @@ Class UserHandler extends DbHandler{
   public function logAction($action){
     $this->sessionSafeStart();
     $usr = $_SESSION['username'];
-    $usrId = $this->query("select id from utenti where Username = '$usr'")->fetchColumn();
+    $usrId = $this->sQuery("select id from utenti where Username = :user", ['user'=>$usr])->fetchColumn();
     $val = [];
     $query;
     if (isset($usrId[0])){
@@ -426,14 +440,14 @@ class InsertHandler extends DbHandler{
     }
 
     //convalida corso
-    $corso = $this->query("SELECT Id FROM corsi WHERE Id = '".$idCorso."'")->fetchColumn();
+    $corso = $this->sQuery("SELECT Id FROM corsi WHERE Id = :idCorso", ['idCorso'=>$idCorso])->fetchColumn();
     if (!isset($corso[0])) {
       $errorCode["corso"] = true;//corso errato o non trovato
       $interruptFlag = true;
     }
 
     //convalida Sede
-    $idSede = $this->query("SELECT id FROM sedi WHERE id = '".$sede."'")->fetchColumn();
+    $idSede = $this->sQuery("SELECT id FROM sedi WHERE id = :sede", ['sede'=>$sede])->fetchColumn();
     if (!isset($idSede[0])) {
       $errorCode["sede"] = true;//sede errata o non trovata
       $interruptFlag = true;
@@ -451,7 +465,7 @@ class InsertHandler extends DbHandler{
     }
 
     //prelevamento id record personale appena aggiunto
-    $idPersonale = $this->query("SELECT Id FROM personale WHERE CF = '$cf'")->fetchColumn();
+    $idPersonale = $this->sQuery("SELECT Id FROM personale WHERE CF = :cf", ["cf"=>$cf])->fetchColumn();
 
     //inserimento corsi_personale
     $Field_val = [
@@ -479,18 +493,21 @@ class InsertHandler extends DbHandler{
     $interruptFlag = false;
 
     //convalida Corso
-    if (null != $this->query("SELECT Id FROM corsi WHERE Id = '$id'")->fetchColumn()) {
+    if (null != $this->sQuery("SELECT Id FROM corsi WHERE Id = :id", ['id'=>$id])->fetchColumn()) {
       $errorCode["corso"] = true;//corso già esistente
       $interruptFlag = true;
     }
 
     //convalida formatore
+    $fparam = [];
     $queryF = "SELECT Id FROM formatori WHERE ";
-    foreach ($idsFormatori as $key => $value)
-      $queryF = $queryF." Id = '$value' OR";
+    for ($i=0; $i < count($idsFormatori); $i++) {
+      $queryF = $queryF." Id = :f$i OR";
+      $fparam["f$i"] = $idsFormatori[$i];
+    }
 
     $queryF = substr($queryF, 0, -3);
-    $idsF = $this->query($queryF)->fetchAll();
+    $idsF = $this->sQuery($queryF, $fparam)->fetchAll();
     if (count($idsF) != count($idsFormatori)) {
       $errorCode["formatori"] = true;//formatori non trovati
       $interruptFlag = true;
@@ -524,7 +541,7 @@ class InsertHandler extends DbHandler{
     $interruptFlag = false;
 
     //controllo se esiste gia
-    $id = $this->query("SELECT Id FROM formatori WHERE Cognome = '$cognome'")->fetchColumn();
+    $id = $this->sQuery("SELECT Id FROM formatori WHERE Cognome = :surname", ['surname'=>$cognome])->fetchColumn();
     if (null != $id){
       $errorCode['formatore'] = true;
       return $errorCode;
@@ -542,7 +559,7 @@ class InsertHandler extends DbHandler{
 
   public function addSede($nome){
     //controllo nome Sede
-    $s = $this->query("SELECT Nome FROM sedi WHERE Nome = '$nome'")->fetchColumn();
+    $s = $this->query("SELECT Nome FROM sedi WHERE Nome = :name", ['name'=>$nome])->fetchColumn();
     if ($s == $nome)
       return 1;//Error: nome già esistente
 
@@ -557,28 +574,28 @@ class InsertHandler extends DbHandler{
   }
 
   public function deletePersonale($id){
-    $result = $this->delete('personale', 'Id', $id);
+    $result = $this->delete('personale', ['Id'=>$id]);
     if (isset($result['deleted']))
       $this->log->logAction('delP:'.$id);
     return $result;
   }
 
   public function deleteCorso($id){
-    $result = $this->delete('corsi', 'Id', $id);
+    $result = $this->delete('corsi', ['Id'=>$id]);
     if (isset($result['deleted']))
       $this->log->logAction('delC:'.$id);
     return $result;
   }
 
   public function deleteSede($id){
-    $result = $this->delete('sedi', 'id', $id);
+    $result = $this->delete('sedi', ['Id'=>$id]);
     if (isset($result['deleted']))
       $this->log->logAction('delS:'.$id);
     return $result;
   }
 
   public function deleteFormatore($id){
-    $result = $this->delete('formatori', 'Id', $id);
+    $result = $this->delete('formatori', ['Id'=>$id]);
     if (isset($result['deleted']))
       $this->log->logAction('delF:'.$id);
     return $result;
@@ -604,15 +621,23 @@ class InsertHandler extends DbHandler{
   }
 
   public function updateCorso($oldId, $newId, $idsFormatori){
-    //aggiorna la tabella Corsi1
+    //aggiorna la tabella Corsi
     if ($oldId != $newId){
       $result = $this->updWhere('corsi', ['Id'=>$newId], "Id = '$oldId'");
       $id = $newId;
-      if (!isset($result['updated'])) return false;
+      if (!isset($result['updated']))
+        return false;
+
+      //modifica la tabella corsi_personale:update
+      $result = $this->update('corsi_personale', ['Id_Corso'=>$newId ], ['field'=>'Id_Corso', 'value'=>$oldId]);
+      if (!isset($result['updated']))
+        return false;
+
     } else $id = $oldId;
 
+    //aggiorna la tabella corsi_formatori
     //ottiene le vecchie relazioni
-    $r = $this->query("SELECT Id_Formatore FROM corsi_formatori WHERE Id_Corso ='$id'");
+    $r = $this->sQuery("SELECT Id_Formatore FROM corsi_formatori WHERE Id_Corso =:id", ['id'=>$id]);
     $oldFormatori = [];
     while ($v = $r->fetch())
       array_push($oldFormatori, $v[0]);
@@ -623,9 +648,8 @@ class InsertHandler extends DbHandler{
 
     //elimina
     if (count($toDelete) > 0){
-      foreach ($toDelete as $key => $value) $q = $q."Id_Formatore = '$value' or ";
-      $q = substr($q, 0, strlen($q) - 4);
-      $result = $this->delWhere('corsi_formatori', $q);
+      $dParam = ['Id_Formatore' => $toDelete];
+      $result = $this->delete('corsi_formatori', $dParam);
       if (!isset($result['deleted']))
         return false;
     }
@@ -679,6 +703,16 @@ class InsertHandler extends DbHandler{
     return $result;
   }
 
+  public function getPersona($id){
+    $result = [];
+    $query = "
+      SELECT personale.*, corsi_personale.*
+      FROM corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.id)
+      WHERE corsi_personale.Id_Personale = :id";
+    $p = $this->sQuery($query, ['id' => $id]);
+    return $p->fetch();
+  }
+
   public function codifyError($errorCode){// todd: da fare piu` carino e cuccioloso
     $str = "";
     $errorFlag = false;
@@ -723,20 +757,19 @@ class printHandler extends DataViewHandler{
     return $merged;
   }
 
-  function saveFiltered($param, $filename){   // NOTE: da eliminare, dovrà essere usata solo saveSelect preleva da db filtrando tramite ->filter($param), poi produce un certificato per tutti, ritorna il path del certificato
-    $data = $this->filter($param);
-    return $this->save($data, $filename);
-  }
-
   function saveSelect($ids, $filename){    //preleva da db record del personale con id€$ids, produce certificati per tutti, salva in tmp e ritorna il path
     //prepara la query con tutti gli id
-    $query = "SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
-    " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id) ".
-    " where personale.Id = ".$ids[0];
-    for ($i=1; $i < count($ids); $i++)
-      $query = $query." or personale.Id = ".$ids[$i];
+    $qParam = [":0"=>$ids[0]];
+    $query =
+    "SELECT personale.*, sedi.Nome as sede, corsi_personale.*
+     from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)
+     where personale.Id = :0";
+    for ($i=1; $i < count($ids); $i++){
+      $query = $query." or personale.Id = :$i";
+      $qParam[":$i"] = $ids[$i];
+    }
     $query = $query." order by corsi_personale.Id_Corso, personale.Cognome";
-    $sth = $this->query($query);
+    $sth = $this->sQuery($query, $qParam);
     $tab = [];
     while($r = $sth->fetch(PDO::FETCH_ASSOC))
       array_push($tab, $r);
@@ -747,40 +780,43 @@ class printHandler extends DataViewHandler{
 
   function filter($param){    //preleva e normalizza i dati per la sostituzione nel doc o per il dataview
     //query in funzione del testo cercato: se è l'unico parametro settato controlla su tutto il db, altrimenti filtra per i soliti parametri a all'interno del risultato cerca quelli col testo corrispondente
+    $qParam = ['idSede'=>$param['Id_Sede'], 'idCorso'=>$param['Id_Corso'], 'dateStart'=>$param['dateStart'], 'dateEnd'=>$param['dateEnd'], 'src'=>"%".$param['src']."%"];
     if ($param['Id_Sede'] != null || $param['Id_Corso'] != null || $param['dateStart'] != null || $param['dateEnd'] != null){
-      $sql = "select * from (SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
-      " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)".
-      " where corsi_personale.Id_Sede = '".$param['Id_Sede']."'".
-      " or corsi_personale.Id_Corso = '".$param['Id_Corso']."'".
-      " or corsi_personale.Mod1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Mod2 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Mod3 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Agg1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Agg2 between '".$param['dateStart']."' and '".$param['dateEnd']."') as tab".
-      " where tab.CF LIKE '%".$param['src']."%'".
-      " or tab.Cognome LIKE '%".$param['src']."%'".
-      " or tab.Nome LIKE '%".$param['src']."%'".
-      " order by tab.sede, tab.Id_Corso, tab.Cognome";
+      $sql =
+      "SELECT * from (SELECT personale.*, sedi.Nome as sede, corsi_personale.*
+       from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)
+       where corsi_personale.Id_Sede = :idSede
+       or corsi_personale.Id_Corso = :idCorso
+       or corsi_personale.Mod1 between :dateStart and :dateEnd
+       or corsi_personale.Mod2 between :dateStart and :dateEnd
+       or corsi_personale.Mod3 between :dateStart and :dateEnd
+       or corsi_personale.Agg1 between :dateStart and :dateEnd
+       or corsi_personale.Agg2 between :dateStart and :dateEnd) as tab
+       where tab.CF LIKE :src
+       or tab.Cognome LIKE :src
+       or tab.Nome LIKE :src
+       order by tab.sede, tab.Id_Corso, tab.Cognome";
     }else{
-      $sql = "SELECT personale.*, sedi.Nome as sede, corsi_personale.*".
-      " from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)".
-      " where corsi_personale.Id_Sede = '".$param['Id_Sede']."'".
-      " or corsi_personale.Id_Corso = '".$param['Id_Corso']."'".
-      " or corsi_personale.Mod1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Mod2 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Mod3 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Agg1 between '".$param['dateStart']."' and '".$param['dateEnd']."'".
-      " or corsi_personale.Agg2 between '".$param['dateStart']."' and '".$param['dateEnd']."'";
+      $sql =
+      "SELECT personale.*, sedi.Nome as sede, corsi_personale.*
+       from corsi_personale JOIN personale on (corsi_personale.Id_Personale = personale.Id) JOIN sedi on (corsi_personale.Id_Sede = sedi.id)
+       where corsi_personale.Id_Sede = :idSede
+       or corsi_personale.Id_Corso = :idCorso
+       or corsi_personale.Mod1 between :dateStart and :dateEnd
+       or corsi_personale.Mod2 between :dateStart and :dateEnd
+       or corsi_personale.Mod3 between :dateStart and :dateEnd
+       or corsi_personale.Agg1 between :dateStart and :dateEnd
+       or corsi_personale.Agg2 between :dateStart and :dateEnd";
       if (strlen($param['src']) > 0){
         $sql = $sql.
-        " or personale.CF LIKE '%".$param['src']."%'".
-        " or personale.Cognome LIKE '%".$param['src']."%'".
-        " or personale.Nome LIKE '%".$param['src']."%'";
+        " or personale.CF LIKE :src
+          or personale.Cognome LIKE :src
+          or personale.Nome LIKE :src";
       }
       $sql = $sql." order by sede, corsi_personale.Id_Corso, personale.Cognome";
     }
 
-    $sth = $this->query($sql);
+    $sth = $this->sQuery($sql, $qParam);
     if ($sth == null) return;
     $tab = [];
     while($r = $sth->fetch(PDO::FETCH_ASSOC))
@@ -946,4 +982,60 @@ class printHandler extends DataViewHandler{
     //return $file;
   }
 }
+
+class AdminHandler extends DbHandler{
+
+  function modifyPsw($old, $new, $username){     //modifica psw
+    //controlla la vecchia Password
+    $sql = "select Password from utenti where Username = :Username";
+    $sth = $this->sQuery($sql, ['Username' => $username]);
+    if ($sth == null) return false;
+    $r = $sth->fetchAll()[0];
+    if($r[0] !== md5($old)) return false;
+
+    //psw controllata: setta la nuova
+    $columns_values = ["Password" => md5($new)];
+    $echo = $this->updWhere("utenti", $columns_values, 'Username="admin"');
+    if(isset($echo['updated'])) return true;
+    else return false;
+  }
+
+  function getUsers(){
+    $sth = $this->query("select Id, Username from utenti where not Username = 'admin'");
+    $tab = [];
+    while($r = $sth->fetch(PDO::FETCH_ASSOC))
+      array_push($tab, $r);
+    return $tab;
+  }
+
+  function newUser($username){  //aggiunge utente
+    //controlla se esiste
+    $s = $this->sQuery("SELECT Username FROM utenti WHERE Username = :Username", ['Username' => $username])->fetchColumn();
+    if ($s == $username)
+      return false;//Error: nome già esistente
+
+    //inserimento
+    $Field_val = ["Username"=>$username, "Password"=>md5($username)];
+    if(!$this->insert("utenti", $Field_val))
+      return false;//Error: generico
+    else return true;//esito positivo
+  }
+
+  function updateUser($id, $username){  //modifica username
+    $result = $this->update('utenti', ['Username' => $username], ['field'=>'Id', 'value'=>$id]);
+    return (isset($result['updated'])) ? true : false;
+  }
+
+  function resetUserPsw($id, $username){
+    $result = $this->update('utenti', ['Password' => md5($username)], ['field'=>'Id', 'value'=>$id]);
+    return (isset($result['updated'])) ? true : false;
+  }
+
+  function deleteUser($id){   //cancella utente
+    $result = $this->delete('utenti', ['Id'=>$id]);
+    return $result;
+  }
+
+}
+
 ?>

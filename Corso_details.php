@@ -37,6 +37,9 @@
           <li>
             <a href="DataView.php">Tabella</a>
           </li>
+          <li>
+            <a href="PrintFilter.php">Stampa</a>
+          </li>
           <!-- inserimento per moderator ed administrator -->
           <?php
             if ($lv > 0){
@@ -46,6 +49,7 @@
           ?>
         </ul>
         <ul class="logout-bar">
+          <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
           <!-- Logout -->
           <li>
             <a href="LogoutResponse.php">Logout</a>
