@@ -65,11 +65,14 @@
                   "<th scope='col'>Aggiornamento 1</th>".
                   "<th scope='col'>Aggiornamento 2</th>".
                   "<th scope='col'>Protocollo</th>".
+                  "<th scope='col'>Data</th>".
                 "</tr>".
             "</thead>".
             "<tbody>";
         $i = 0;
-        foreach ($dv_handler->search() as $record) {
+        $ll = $dv_handler->search();
+        if (isset($ll))
+          foreach ($ll as $record) {
           $i = $i + 1;
           $str = $str."<tr>
                 <td>".$record['Cognome']."</td>
@@ -90,7 +93,8 @@
                 <td>".$record['Mod3']."</td>
                 <td>".$record['Agg1']."</td>
                 <td>".$record['Agg2']."</td>
-                <td>".$record['Protocollo']."</td>";
+                <td>".$record['Protocollo']."</td>
+                <td>".$record['DateProtocollo']."</td>";
           if ($lv > 0)
             $str = $str."<td>
                           <form id='$i-deleteP' onclick='del(this)' method='post'>

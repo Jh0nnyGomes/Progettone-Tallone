@@ -29,6 +29,7 @@
   $param_c['Mod3'] = $ins->isDate($_POST["Mod3"]) ? $_POST["Mod3"] : null;
   $param_c['Agg1'] = $ins->isDate($_POST["Agg1"]) ? $_POST["Agg1"] : null;
   $param_c['Agg2'] = $ins->isDate($_POST["Agg2"]) ? $_POST["Agg2"] : null;
+  $param_c['DateProtocollo'] = $ins->isDate($_POST["DateProtocollo"]) ? $_POST["DateProtocollo"] : null;
   $param_c['Protocollo'] = $_POST["Protocollo"];
 
   //controlla i campi ed evita di inviare campi non modificati

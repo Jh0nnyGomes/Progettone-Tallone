@@ -118,7 +118,7 @@
           $list = $pt_handler->filter($param);
 
           if (isset($list) && count($list) > 0){
-            $str = "<br><form><table class='table'><thead><tr>";
+            $str = "<br><table class='table'><thead><tr>";
             if($lv > 0){
               $selectedCbx = unserialize($_POST["checkedRecord"]);
               $checked = (is_array($selectedCbx)) ? null : "checked";
@@ -138,6 +138,7 @@
                   "<th scope='col'>Aggiornamento 1</th>".
                   "<th scope='col'>Aggiornamento 2</th>".
                   "<th scope='col'>Protocollo</th>".
+                  "<th scope='col'>Data</th>".
                 "</tr>".
             "</thead>".
             "<tbody>";
@@ -162,11 +163,11 @@
                 <td>".$record['mod3']."</td>
                 <td>".$record['agg1']."</td>
                 <td>".$record['agg2']."</td>
-                <td>".$record['protocollo']."</td></tr>";
+                <td>".$record['protocollo']."</td>
+                <td>".$record['date_proto']."</td>";
             }
-            $str = $str."</tbody> </table> <div class='pagcontainer'>";
+            $str = $str."</tbody> </table> <div class='pagcontainer'></div>";
 
-            $str = $str."</div></form>";
             echo $str;
           }
           else echo "<br> Selezionare dei parametri e/o cliccare su filtra per un'anteprima del personale da certificare";

@@ -96,7 +96,8 @@
                       <p>Mod 3<input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class='mod-date'><br>
                       <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
                       <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
-                      <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><br>
+                      <p><input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><p>
+                      <p>Data Protocollo<input type='date' name='DateProtocollo' placeholder='Data Protocollo' value='".$tmp['DateProtocollo']."' class='mod-date'></p><br>
                       <input type='submit' name='submit' value='Aggiungi' class='addstaff'>
                     </form>";
 

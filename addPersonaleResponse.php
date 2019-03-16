@@ -20,7 +20,7 @@
   $idCorso = $_POST["Id_Corso"];
   $idSede = $_POST["Id_Sede"];
   $ore = (int)$_POST["Ore"];
-  $dateCorso = ['Mod1'=>$_POST["Mod1"], 'Mod2'=>$_POST["Mod2"], 'Mod3'=>$_POST["Mod3"], 'Agg1'=>$_POST["Agg1"], 'Agg2'=>$_POST["Agg2"]];
+  $dateCorso = ['Mod1'=>$_POST["Mod1"], 'Mod2'=>$_POST["Mod2"], 'Mod3'=>$_POST["Mod3"], 'Agg1'=>$_POST["Agg1"], 'Agg2'=>$_POST["Agg2"], 'DateProtocollo'=>$_POST['DateProtocollo']];
   $protocollo = $_POST["Protocollo"];
 
   //inserisce i dati e ritorna l'esito per POST

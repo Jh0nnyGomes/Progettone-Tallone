@@ -201,7 +201,6 @@ Class DataViewHandler extends DbHandler{
     $this->all_rows = $this->sQuery($sql, ['src'=>"%$search%"])->fetchColumn();
     $this->x_pag = $this->getRecordPerPag();
     $this->all_pages = ceil($this->all_rows / $this->x_pag);
-    //DEBUG echo "all_rows:".$this->all_rows." x_pag:".$this->x_pag."all_pages:".$this->all_pages;
   }
 
   public function getSearchedText(){
@@ -237,6 +236,7 @@ Class DataViewHandler extends DbHandler{
 
     $sth = $this->sQuery($sql, ['src'=>"%$searchText%"]);
     $tab = [];
+
     while($r = $sth->fetch(PDO::FETCH_ASSOC))
       array_push($tab, $r);
     return $tab;
@@ -479,6 +479,7 @@ class InsertHandler extends DbHandler{
       "Agg1"=>$dateCorso["Agg1"],
       "Agg2"=>$dateCorso["Agg2"],
       "Protocollo"=>$protocollo,
+      "DateProtocollo"=>$dateCorso["DateProtocollo"]
     ];
     if(!$this->insert("corsi_personale", $Field_val))
       $errorCode["generic"] = true;
@@ -771,8 +772,38 @@ class printHandler extends DataViewHandler{
     $query = $query." order by corsi_personale.Id_Corso, personale.Cognome";
     $sth = $this->sQuery($query, $qParam);
     $tab = [];
-    while($r = $sth->fetch(PDO::FETCH_ASSOC))
+    $idCorsi = [];
+    while($r = $sth->fetch(PDO::FETCH_ASSOC)){
       array_push($tab, $r);
+      if (!in_array($r['Id_Corso'], $idCorsi))
+        array_push($idCorsi, $r['Id_Corso']);
+    }
+
+    //preleva i FORMATORI di ogni corso estratto
+    $qParam = [":0"=>$idCorsi[0]];
+    $query =
+    "SELECT formatori.Cognome as formatore, corsi_formatori.Id_Corso
+     from formatori JOIN corsi_formatori on (formatori.Id = corsi_formatori.Id_Formatore)
+     where corsi_formatori.Id_Corso = :0";
+    for ($i=1; $i < count($idCorsi); $i++){
+      $query = $query." or corsi_formatori.Id_Corso = :$i";
+      $qParam[":$i"] = $idCorsi[$i];
+    }
+
+    $sth = $this->sQuery($query, $qParam);
+    $formatori = [];
+    $f = [];  //contiene Id_Corso, Cognome formatore
+    while($r = $sth->fetch(PDO::FETCH_ASSOC))
+      array_push($f, $r);
+
+    //raggruppa i formatori per ogni corso
+    foreach ($f as $key => $value) {
+      if (!array_key_exists($value['Id_Corso'], $formatori)) //se non esiste il gruppo relativo al corso lo crea
+        $formatori[$value['Id_Corso']] = [];
+      array_push($formatori[$value['Id_Corso']], $value['formatore']);
+    }
+
+    $tab['formatori'] = $formatori; //include in fondo alla tabella per la codifica
 
     $data = $this->codify($tab);
     return $this->save($data, $filename);
@@ -791,6 +822,7 @@ class printHandler extends DataViewHandler{
        or corsi_personale.Mod2 between :dateStart and :dateEnd
        or corsi_personale.Mod3 between :dateStart and :dateEnd
        or corsi_personale.Agg1 between :dateStart and :dateEnd
+       or corsi_personale.DateProtocollo between :dateStart and :dateEnd
        or corsi_personale.Agg2 between :dateStart and :dateEnd) as tab
        where tab.CF LIKE :src
        or tab.Cognome LIKE :src
@@ -806,6 +838,7 @@ class printHandler extends DataViewHandler{
        or corsi_personale.Mod2 between :dateStart and :dateEnd
        or corsi_personale.Mod3 between :dateStart and :dateEnd
        or corsi_personale.Agg1 between :dateStart and :dateEnd
+       or corsi_personale.DateProtocollo between :dateStart and :dateEnd
        or corsi_personale.Agg2 between :dateStart and :dateEnd";
       if (strlen($param['src']) > 0){
         $sql = $sql.
@@ -829,8 +862,10 @@ class printHandler extends DataViewHandler{
     //prepara l'array con i risultati
     $filtered = [];
     $pers = [];
+    $formatori = $tab['formatori'];
+    unset($tab['formatori']);
     foreach ($tab as $record) {
-      $pers['name'] = $record["Nome"];$record["Cognome"];
+      $pers['name'] = $record["Nome"];
       $pers['surname'] = $record["Cognome"];
       $pers['cf'] = $record["CF"];
       $pers['birth_place'] = $record["ComuneNascita"];
@@ -845,6 +880,18 @@ class printHandler extends DataViewHandler{
       $pers['id'] = $record["Id"];
       $pers['sede'] = $record["sede"];
       $pers['corso'] = $record["Id_Corso"];
+      $pers['date_proto'] = $record["DateProtocollo"];
+      $pers['formatori'] = '';
+
+      //prepara i FORMATORI
+      $f = $formatori[$record["Id_Corso"]];
+      if (isset($f)){
+        foreach ($f as $key => $value)
+          if (isset($value) && $value !== '')
+            $pers['formatori'] = $pers['formatori'].$value.'-';
+
+        $pers['formatori'] = substr($pers['formatori'], 0, -1);//elimina l'ultimo '-'
+      }
 
       array_push($filtered, $pers);
     }
@@ -873,7 +920,7 @@ class printHandler extends DataViewHandler{
         $timestamp = date('d/m/Y');
 
         // this data Replace the placeholders with actual values
-        $xml = str_replace("[name]", $pers["name"]." ".$pers["surname"], $xml);
+        $xml = str_replace("[name]", $pers["surname"]." ".$pers["name"], $xml);
         $xml = str_replace("[cf]", $pers["cf"], $xml);
         $xml = str_replace("[birth_place]", $pers["birth_place"], $xml);
         $xml = str_replace("[birth_date]", $pers["birth_date"], $xml);
@@ -881,10 +928,13 @@ class printHandler extends DataViewHandler{
         $xml = str_replace("[mod1]", $pers["mod1"], $xml);
         $xml = str_replace("[mod2]", $pers["mod2"], $xml);
         $xml = str_replace("[mod3]", $pers["mod3"], $xml);
-        $xml = str_replace("[agg]", $pers["agg"], $xml);
+        $xml = str_replace("[agg1]", $pers["agg1"], $xml);
         $xml = str_replace("[sede]", $pers["sede"], $xml);
         $xml = str_replace("[id]", $pers["id"], $xml);
         $xml = str_replace("[date]", $timestamp, $xml);
+        $xml = str_replace("[date_proto]", $pers["date_proto"], $xml);
+        $xml = str_replace("[formatori]", $pers["formatori"], $xml);
+        $xml = str_replace("[protocollo]", $pers["protocollo"], $xml);
 
         //Replace the content with the new content created above.
         $zip_val->addFromString($key_file_name, $xml);

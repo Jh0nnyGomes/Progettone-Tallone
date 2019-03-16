@@ -107,7 +107,7 @@
                       <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
                       <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
                       <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><br>
-
+                      <p>Data Protocollo<input type='date' name='DateProtocollo' placeholder='Data Protocollo' value='".$tmp['DateProtocollo']."' class='mod-date'></p><br>
                       <br>
                       <input type='hidden' name='src' value='$src'>
                       <input type='hidden' name='pag' value='$pag'>
