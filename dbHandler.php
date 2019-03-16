@@ -727,8 +727,14 @@ class InsertHandler extends DbHandler{
     else return "Record inserito correttamente";
   }
 }
+/*
+require 'phar://resources/cloudconvert-php-master/cloudconvert-php.phar/vendor/autoload.php';
+use \CloudConvert\Api;
+*/
 
 class printHandler extends DataViewHandler{
+
+
 
   public function printCert($param){    // stampa certificati TODO: termina
     $doc =  $this->save($corso, $sede, "Certificato");
@@ -755,6 +761,7 @@ class printHandler extends DataViewHandler{
         $merged = $this->mergeDocs($merged, $tmp, $filename);
       }
     }
+    unlink($tmp); //elimina il file temporaneo
     return $merged;
   }
 
@@ -983,6 +990,12 @@ class printHandler extends DataViewHandler{
     if(!file_exists($filePath)){ // file does not exist
         return false;
     } else {
+
+        //convert in pdf
+        //$filePath = $this->convertToPDF($filePath, $filename);
+
+        //$filePath = $this->convertToPDF(basename($filePath, '.doc'), $filename);
+
         header("Cache-Control: public");
         header("Content-Description: File Transfer");
         header("Content-Disposition: attachment; filename=$filename.doc");
@@ -991,45 +1004,31 @@ class printHandler extends DataViewHandler{
 
         // read the file from disk
         readfile($filePath);
+        ignore_user_abort(true);
+        unlink($filePath);
         return true;
     }
   }
 
-  function convertToPDF($file){   // TODO: sistemare, non va
-    /*php word -> non funziona
-    include_once('\resources\PhpWord\Settings.php');
-    include_once('\resources\PhpWord\PhpWord.php');
-    include_once('\resources\PhpWord\Media.php');
-    include_once('\resources\PhpWord\Style.php');
-    include_once('\resources\PhpWord\Collection\AbstractCollection.php');
-    include_once('\resources\PhpWord\Collection\Bookmarks.php');
-    include_once('\resources\PhpWord\Collection\Titles.php');
-    include_once('\resources\PhpWord\Collection\Footnotes.php');
-    include_once('\resources\PhpWord\Collection\EndNotes.php');
-    include_once('\resources\PhpWord\Collection\Charts.php');
-    include_once('\resources\PhpWord\Collection\Comments.php');
-    include_once('\resources\PhpWord\Metadata\DocInfo.php');
-    include_once('\resources\PhpWord\Metadata\Settings.php');
-    include_once('\resources\PhpWord\Metadata\Compatibility.php');
-    include_once('\resources\PhpWord\TemplateProcessor.php');
-    include_once('\resources\PhpWord\Shared\ZipArchive.php');*/
+  function convertToPDF($fileName, $pdfName){   // NOTE: converte solo .doc E file che siano in /tmp
 
-    \PhpOffice\PhpWord\Settings::setPdfRendererPath('/resources/TCPDF');
-    \PhpOffice\PhpWord\Settings::setPdfRendererName('TCPDF');
+    $api = new Api("0687h5DeLzgTGxEMJNz2j5ivzGGmlqiuXSU1vY2G1rZZ0PcMplDRAWIbyl5NjFTu");
+    $outputPath = "tmp\\$pdfName.pdf";
+    try {
+      $api->convert([
+              'inputformat' => 'doc',
+              'outputformat' => 'pdf',
+              'input' => 'upload',
+              'file' => fopen("tmp\\$fileName.doc", 'r'),
+          ])
+          ->wait()
+          ->download($outputPath);
 
-    $phpWord = new \PhpOffice\PhpWord\PhpWord();
+      return getcwd().$outputPath;
 
-    //Open template and save it as docx
-    $document = $phpWord->loadTemplate($file);
-    $document->saveAs('temp.docx');
-
-    //Load temp file
-    $phpWord = \PhpOffice\PhpWord\IOFactory::load('temp.docx');
-
-    //Save it
-    $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord , 'PDF');
-    $xmlWriter->save('result.pdf');
-    //return $file;
+    } catch (\Exception $e) {
+      echo "Error in converting to pdf file<br><br>$e";
+    }
   }
 }
 
