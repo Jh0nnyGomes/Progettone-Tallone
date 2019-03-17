@@ -1044,7 +1044,7 @@ class AdminHandler extends DbHandler{
 
     //psw controllata: setta la nuova
     $columns_values = ["Password" => md5($new)];
-    $echo = $this->updWhere("utenti", $columns_values, 'Username="admin"');
+    $echo = $this->updWhere("utenti", $columns_values, 'Username="$username"');
     if(isset($echo['updated'])) return true;
     else return false;
   }
