@@ -42,7 +42,6 @@
         break;
     }
 ?>
-
 <form id='response' action='setting.php' method='POST'>
   <input type='hidden' name='response' value='<?php echo $scope; ?>'>
   <input type='hidden' name='result' value='<?php echo (!$result) ? "failure" : "success"; ?>'>

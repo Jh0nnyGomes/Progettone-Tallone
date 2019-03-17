@@ -113,7 +113,7 @@
                           </form>
                         </td>";
             $str = $str."<td>
-              <form action='PrintFilterResponse.php' method='post'>
+              <form action='PrintFilterResponse.php' target='_blank' method='post'>
                 <input type='hidden' name='id' value='".$record['Id']."'>
                 <input type='hidden' name='scope' value='download'>
                 <input type='hidden' name='src' value='$src'>

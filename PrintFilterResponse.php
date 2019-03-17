@@ -10,9 +10,7 @@
     $filepath = $pt_handler->saveSelect([$_POST['id']], "Certificato");
     if (isset($_POST['scope']) && $_POST['scope'] == 'download')
       $result = $pt_handler->download($filepath, "certificato");
-    else if (isset($_POST['scope']) && $_POST['scope'] == 'print'){
-      // TODO: stampa
-    }
+    
     echo "<form id='response' action='DataView.php' method='POST'>
             <input type='hidden' name='response' value='downloadOrPrint'>
             <input type='hidden' name='msg' value='$filepath'>
@@ -22,22 +20,11 @@
           <script type='text/javascript'>
             document.getElementById('response').submit();
           </script>";
-  } else {  //arriva da prtintfilter
+   } else {  //arriva da prtintfilter
     $param = json_decode($_POST['ids'], true);
     if (count($param) > 0){
       $filepath = $pt_handler->saveSelect($param, "Certificato");
-      if ($_POST["scope"] == 'download')
-        $result = $pt_handler->download($filepath, "certificato");
 
-      else if ($_POST["scope"] == 'print'){
-        /* TODO:
-        $app= new COM("Word.Application");
-        $app->visible = true;
-        $app->Documents->Open($filepath);
-        $app->ActiveDocument->PrintOut();
-        $app->ActiveDocument->Close();
-        $app->Quit();*/
-      }
     }
       echo "<form id='response' action='PrintFilter.php' method='POST'>
               <input type='hidden' name='response' value='downloadOrPrint'>

@@ -95,13 +95,12 @@
           echo $str."</form>";
 
           //form per la stampa/download dei dati // TODO: implementare la stampa
-          $str = "<form id='subDataForm' action='PrintFilterResponse.php' method='POST'>
+          $str = "<form id='subDataForm' action='PrintFilterResponse.php' target='_blank' method='POST'>
           <input type='hidden' name='ids'/>
           <input type='hidden' name='scope'/>";
           if($lv > 0){
             $str = $str."
-            <input type='button' name='saveBtn' onclick=saveSelectded() value='salva selezionati' />
-            <input type='button' name='printBtn' onclick=printSelectded() value='stampa selezionati' />";
+            <input type='button' name='saveBtn' onclick=saveSelectded() value='salva selezionati' />";
           }
           $str = $str."</form>";
 
