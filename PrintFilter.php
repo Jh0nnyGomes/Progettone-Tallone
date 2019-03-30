@@ -17,29 +17,29 @@
   <div class="container">
      <div class="navbar">
        <ul class="navbar-list">
-                    <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
-                    <li>
-                        <a href="index.html">Home</a>
-                    </li>
-                    <li>
-                        <a href="index.html">Tabella</a>
-                    </li>
-                    <!-- inserimento per administrator -->
-                    <?php
-                      // admin
-                      if ($lv > 0){
-                        echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-                        echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
-                      }
-                    ?>
-                </ul>
-                <ul class="logout-bar">
-                    <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
-                    <!-- Logout -->
-                    <li>
-                        <a href="LogoutResponse.php">Logout</a>
-                    </li>
-                </ul>
+       <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
+         <li>
+           <a href="index.html">Home</a>
+         </li>
+         <li>
+           <a href="index.html">Tabella</a>
+         </li>
+         <!-- inserimento per administrator -->
+         <?php
+         // admin
+           if ($lv > 0){
+             echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
+             echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+           }
+         ?>
+       </ul>
+       <ul class="logout-bar">
+         <li>
+         <!-- Logout -->
+           <a href="LogoutResponse.php">Logout</a>
+         </li>
+		 <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
+        </ul>
       </div>
 
       <?php
@@ -53,7 +53,7 @@
           //lista corsi
           $i = new InsertHandler();
           $l = $i->getCorsi();
-          $str = $str."<select name='Id_Corso' onchange=filter()> <option value='-1' disabled selected>Filtra per corso</option> ";
+          $str = $str."<select class='listaCorsi' name='Id_Corso' onchange=filter()> <option value='-1' disabled selected>Filtra per corso</option> ";
           foreach ($l as $key => $value){
             if ($value != null){
               $str = $str."<option value='".$value."'";
@@ -66,7 +66,7 @@
 
           //lista sedi
           $l = $i->getSedi();
-          $str = $str." <select name='Id_Sede' onchange=filter()> <option value='-1' disabled selected>Sede</option> ";
+          $str = $str." <select class='listaSedi' name='Id_Sede' onchange=filter()> <option value='-1' disabled selected>Sede</option> ";
           foreach ($l as $key => $value){
             if ($value != ''){
               $str = $str." <option value='".$value['id']."'";
@@ -75,22 +75,23 @@
               $str = $str.">".$value['Nome']."</option> ";
             }
           }
+		  $str = $str . "</select>";
 
           //periodo
           $str = $str."
           <label>Da</label>
-          <input type='date' name='dateStart' onchange='limitEndDate()' value='".$_POST["dateStart"]."'/>
-          <label>A</label>
-          <input type='date' name='dateEnd' onchange='limitStartDate()' value='".$_POST["dateEnd"]."'/>";
+          <input type='date' class='fromDate' name='dateStart' onchange='limitEndDate()' value='".$_POST["dateStart"]."'/>
+          <label> A </label>
+          <input type='date' class='toDate' name='dateEnd' onchange='limitStartDate()' value='".$_POST["dateEnd"]."'/>";
 
           //barra di ricerca
-          $str = $str."<input type='text' name='src' placeholder='cerca' value='".$_POST["src"]."'/>";
+          $str = $str."<input class='searchBar' type='text' name='src' placeholder='Cerca' value='".$_POST["src"]."'/>";
 
           //reset button
-          $str = $str."<input type='button' onclick=resetAll() value='Reset'/>";//input type='reset' non funziona...
+          $str = $str."<input class='btnReset' type='button' onclick=resetAll() value='Reset'/>";//input type='reset' non funziona...
 
           //submit->filtra i risultati con i parametri selezionati
-          $str = $str."<input type='submit' value='filtra risultati'/>"; //ricarica la pagina postando a sè stessa
+          $str = $str."<input class='btnFilter' type='submit' value='filtra risultati'/>"; //ricarica la pagina postando a sè stessa
 
           echo $str."</form>";
 
@@ -100,7 +101,7 @@
           <input type='hidden' name='scope'/>";
           if($lv > 0){
             $str = $str."
-            <input type='button' name='saveBtn' onclick=saveSelectded() value='salva selezionati' />";
+            <input class='btnSave' type='button' name='saveBtn' onclick=saveSelectded() value='salva selezionati' />";
           }
           $str = $str."</form>";
 
@@ -169,7 +170,7 @@
 
             echo $str;
           }
-          else echo "<br> Selezionare dei parametri e/o cliccare su filtra per un'anteprima del personale da certificare";
+          else echo "<br><p class='wrapPrint'>Selezionare dei parametri e/o cliccare su filtra per un'anteprima del personale da certificare</p>";
 
         ?>
       </div>

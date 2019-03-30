@@ -46,24 +46,27 @@
             <!-- Logout -->
             <a href="LogoutResponse.php">Logout</a>
           </li>
+		  <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
         </ul>
       </div>
 
-    <button id='modPBtn' onclick='modifyPsw()'>modifica password</button>
+    <button id='modPBtn' onclick='modifyPsw()'>Modifica password</button>
 
     <div id='modP' style='display:none'>
       <form action='modifyPsw.php' method='POST'>
-        <input type='password' name='oldPsw' placeholder='vecchia password'>
-        <input type='password' name='newPsw' placeholder='nuova password'>
-        <input type='password' name='copyNewPsw' placeholder='reinserisci nuova password'>
-        <input type='submit'>
+        <input class="oldPsw" type='password' name='oldPsw' placeholder='vecchia password'>
+        <input class="newPsw" type='password' name='newPsw' placeholder='nuova password'>
+        <input class="copyNewPsw" type='password' name='copyNewPsw' placeholder='reinserisci nuova password'>
+        <input class="subNewPsw" type='submit'>
       </form>
-      <button onclick='back()'>annulla</button>
+      <button class="btnSave" onclick='back()'>annulla</button>
     </div>
 
     <div id='users'>
-      Gestisci utenti
-      <button id='newUser' onclick='newUser()'>Aggiungi nuovo utente</button>
+      <p class='pUsers'>Gestisci utenti
+	    <button id='newUser' onclick='newUser()'>Aggiungi nuovo utente</button>
+	  </p>
+      <!--<button id='newUser' onclick='newUser()'>Aggiungi nuovo utente</button>-->
       <table class='table'>
         <?php
           //gestione utenti->aggiunta/modifica/eliminazione/reset account
@@ -81,13 +84,13 @@
                     <td><div id='".$u['Id']."_modUsrn' onclick=modUsrname(this)>
                       <input type='hidden' name='usrn' value='".$u['Username']."'>
                       <input type='hidden' name='Id' value='".$u['Id']."'>
-                      <input type='image' name='update' src='resources/img/modify.png' width=20 height=20>
+                      <input type='image' name='update' src='resources/img/modify.png'>
                     </div></td>
                     <td><form onclick='del(this)' method='POST'>
                       <input type='hidden' name='usrn' value='".$u['Username']."'>
                       <input type='hidden' name='Id' value='".$u['Id']."'>
                       <input type='hidden' name='scope' value='delete'>
-                      <input type='image' name='delete' src='resources/img/trash.png' width=20 height=20>
+                      <input type='image' name='delete' src='resources/img/trash.png'>
                     </form></td>
                   </tr>";
           }
@@ -99,10 +102,10 @@
       <form id='modUsrForm' action='UpdateUsersResponse.php' method="POST">
         <input type="hidden" name='scope' value="newUser">
         <input type="hidden" name='Id'> <!-- per quando viene usata come update -->
-        <input type="text" name='usrn' placeholder="Username / codice meccanografico scuola" value="<?php echo isset($_POST['back']) ? unserialize($_POST['back'])['usrn'] : null; ?>" >
+        <input class="modUsername" type="text" name='usrn' placeholder="Username / codice meccanografico scuola" value="<?php echo isset($_POST['back']) ? unserialize($_POST['back'])['usrn'] : null; ?>" >
         <input type="submit" value='salva'>
       </form>
-      <button onclick='back()'>annulla</button>
+      <button class="btnSave" onclick='back()'>annulla</button>
     </div>
 
 

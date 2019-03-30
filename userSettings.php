@@ -39,10 +39,13 @@
             <!-- Logout -->
             <a href="LogoutResponse.php">Logout</a>
           </li>
+		  <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
         </ul>
       </div>
 
-    <button id='modPBtn' onclick='modifyPsw()'>modifica password</button>
+	<div class="modPwBtn">
+	  <button id='modPBtn' onclick='modifyPsw()'>Modifica password</button>
+	</div>
 
     <div id='modP' style='display:none'>
       <form action='modifyPsw.php' method='POST'>
@@ -52,7 +55,7 @@
         <input type='hidden' name='isUser'>
         <input type='submit' />
       </form>
-      <button onclick='back()'>annulla</button>
+      <button onclick='back()'>Annulla</button>
     </div>
 
     <script>

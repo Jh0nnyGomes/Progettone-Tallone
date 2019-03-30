@@ -38,11 +38,11 @@
           </form>
         </ul>
           <ul class="logout-bar">
-          <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
           <li>
             <!-- Logout -->
             <a href="LogoutResponse.php">Logout</a>
           </li>
+		  <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
         </ul>
       </div>
       <?php
@@ -66,6 +66,9 @@
                   "<th scope='col'>Aggiornamento 2</th>".
                   "<th scope='col'>Protocollo</th>".
                   "<th scope='col'>Data</th>".
+				  "<th scope='col'></th>".
+				  "<th scope='col'></th>".
+				  "<th scope='col'></th>".
                 "</tr>".
             "</thead>".
             "<tbody>";
@@ -101,7 +104,7 @@
                             <input type='hidden' name='Id' value='".$record['Id']."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' src='resources/img/trash.png' width=20 height=20>
+                            <input type='image' src='resources/img/trash.png'>
                           </form>
                         </td>
                         <td>
@@ -109,7 +112,7 @@
                             <input type='hidden' name='person' value='".serialize($record)."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
-                            <input type='image' src='resources/img/modify.png' width=20 height=20>
+                            <input type='image' src='resources/img/modify.png'>
                           </form>
                         </td>";
             $str = $str."<td>
@@ -118,7 +121,7 @@
                 <input type='hidden' name='scope' value='download'>
                 <input type='hidden' name='src' value='$src'>
                 <input type='hidden' name='pag' value='$pag'>
-                <input type='image' src='resources/img/download.png' width=20 height=20>
+                <input type='image' src='resources/img/download.png'>
               </form>
             </td>";
             $str = $str."</tr>";

@@ -40,12 +40,12 @@
               ?>
           </ul>
           <ul class="logout-bar">
-              <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
-              <!-- Logout -->
-              <li>
-                  <a href="LogoutResponse.php">Logout</a>
-              </li>
-          </ul>
+          <li>
+            <!-- Logout -->
+            <a href="LogoutResponse.php">Logout</a>
+          </li>
+		  <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
+        </ul>
       </div>
 
     <div class="row">
@@ -96,7 +96,7 @@
                       <p>Mod 3<input type='date' name='Mod3' placeholder='Mod3' value='".$tmp['Mod3']."' class='mod-date'><br>
                       <p>Aggiornamento 1<input type='date' name='Agg1' placeholder='Aggiornamento' value='".$tmp['Agg1']."' class='mod-date'></p><br>
                       <p>Aggiornamento 2<input type='date' name='Agg2' placeholder='Aggiornamento' value='".$tmp['Agg2']."' class='mod-date'></p><br>
-                      <p><input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='nametxt'><p>
+                      <input type='text' name='Protocollo' placeholder='Protocollo' value='".$tmp['Protocollo']."' class='protocoltxt'>
                       <p>Data Protocollo<input type='date' name='DateProtocollo' placeholder='Data Protocollo' value='".$tmp['DateProtocollo']."' class='mod-date'></p><br>
                       <input type='submit' name='submit' value='Aggiungi' class='addstaff'>
                     </form>";

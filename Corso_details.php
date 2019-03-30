@@ -49,11 +49,11 @@
           ?>
         </ul>
         <ul class="logout-bar">
-          <?php echo "<li><form action='setting.php'><input type='image' src='resources/img/setting.png' width=20 height=20></form></li>"; ?>
-          <!-- Logout -->
           <li>
+            <!-- Logout -->
             <a href="LogoutResponse.php">Logout</a>
           </li>
+		  <?php echo "<li><form action='setting.php'><input class='settingImg' type='image' src='resources/img/setting.png'></form></li>"; ?>
         </ul>
       </div>
 

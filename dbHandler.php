@@ -15,8 +15,8 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    $this->password = 'root';//julian DEBUG
-    //$this->password = 'mysql';//jhonny DEBUG
+    //$this->password = 'root';//julian DEBUG
+    $this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
     //crea nuova connessione
     try {
