@@ -317,6 +317,7 @@ Class UserHandler extends DbHandler{
     }
     return $resultObj;
   }
+
   public function logAction($action){
     $this->sessionSafeStart();
     $usr = $_SESSION['username'];
@@ -834,7 +835,7 @@ class printHandler extends DataViewHandler{
     $pdf->Output($fileName, 'I');
   }
 }
-class AdminHandler extends DbHandler{
+class AdminHandler extends UserHandler{
   function modifyPsw($old, $new, $username){     //modifica psw
     //controlla la vecchia Password
     $sql = "select Password from utenti where Username = :Username";
@@ -845,7 +846,10 @@ class AdminHandler extends DbHandler{
     //psw controllata: setta la nuova
     $columns_values = ["Password" => md5($new)];
     $echo = $this->updWhere("utenti", $columns_values, 'Username="'.$username.'"');
-    if(isset($echo['updated'])) return true;
+    if(isset($echo['updated'])) {
+      $this->logAction("modPsw");
+      return true;
+    }
     else return false;
   }
   function getUsers(){
@@ -864,19 +868,34 @@ class AdminHandler extends DbHandler{
     $Field_val = ["Username"=>$username, "Password"=>md5($username)];
     if(!$this->insert("utenti", $Field_val))
       return false;//Error: generico
-    else return true;//esito positivo
+    else {
+      $this->logAction("addNewUser:$username");
+      return true;//esito positivo
+    }
   }
   function updateUser($id, $username){  //modifica username
     $result = $this->update('utenti', ['Username' => $username], ['field'=>'Id', 'value'=>$id]);
-    return (isset($result['updated'])) ? true : false;
+    if (isset($result['updated'])) {
+      $this->logAction("UpdUsern@:$id");
+      return true;
+    }
+    return false;
   }
   function resetUserPsw($id, $username){
     $result = $this->update('utenti', ['Password' => md5($username)], ['field'=>'Id', 'value'=>$id]);
-    return (isset($result['updated'])) ? true : false;
+    if (isset($result['updated'])) {
+      $this->logAction("ResetPsw@:$id");
+      return true;
+    }
+    return false;
   }
   function deleteUser($id){   //cancella utente
     $result = $this->delete('utenti', ['Id'=>$id]);
-    return $result;
+    if ($result) {
+      $this->logAction("DelUser@:$id");
+      return true;
+    }
+    return false;
   }
 }
 ?>
