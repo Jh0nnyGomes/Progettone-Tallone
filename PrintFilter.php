@@ -147,7 +147,7 @@
                 if (is_array($selectedCbx))
                   $checked = (in_array($record["id"], $selectedCbx)) ? "checked" : null ;
                 else $checked = "checked";
-                $str = $str."<tr><td><input type='checkbox' name='cbx' value='".$record["id"]. "' $checked /></td>";
+                $str = $str."<tr><td><input type='checkbox' name='cbx' value='".$record["id"]. "' $checked onclick='uncheck()'/></td>";
               }
               else $str = $str."<tr id='".$record["id"]."' onclick=confirmBox(this.id)>";
               $str = $str.
@@ -208,6 +208,9 @@
            var list = document.querySelectorAll("input[name=cbx]");
            for (var i = 0; i < list.length; i++)
              list[i].checked = status;
+        }
+        function uncheck(){
+          document.getElementById("chbox").checked = false;;
         }
         function resetAll(){
           //document.getElementById('firstform').reset(); non va... :(

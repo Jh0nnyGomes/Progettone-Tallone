@@ -15,9 +15,15 @@ Class DbHandler {
     $this->servername = 'localhost';
     $this->port = 3306;
     $this->username = 'root';
-    //$this->password = 'root';//julian DEBUG
-    $this->password = 'mysql';//jhonny DEBUG
+    $this->password = 'root';//julian DEBUG
+    //$this->password = 'mysql';//jhonny DEBUG
     $this->dbName = 'corsisicurezzadb';
+    /*
+    $this->servername = 'localhost';
+    $this->username = 'corsisicurezzava@localhost';
+    $this->password = '';
+    $this->dbName = 'my_corsisicurezzava';
+    */
     //crea nuova connessione
     try {
       $this->conn = new PDO("mysql:host=$this->servername;dbname=$this->dbName", $this->username, $this->password);
@@ -256,7 +262,7 @@ Class UserHandler extends DbHandler{
   function __construct(){
     parent::__construct();
     //mappa la tabella
-    $this->tabName = "Utenti";
+    $this->tabName = "utenti";
     $this->pswField = "Password";
     $this->usrField = "Username";
     $this->emailField = "email";
@@ -838,7 +844,7 @@ class AdminHandler extends DbHandler{
     if($r[0] !== md5($old)) return false;
     //psw controllata: setta la nuova
     $columns_values = ["Password" => md5($new)];
-    $echo = $this->updWhere("utenti", $columns_values, 'Username="$username"');
+    $echo = $this->updWhere("utenti", $columns_values, 'Username="'.$username.'"');
     if(isset($echo['updated'])) return true;
     else return false;
   }
