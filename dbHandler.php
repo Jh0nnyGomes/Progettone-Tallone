@@ -291,6 +291,10 @@ Class UserHandler extends DbHandler{
       $_SESSION["username"] = $user;
       $_SESSION["logged"] = 1;
       $_SESSION["accessLv"] = $record[1];
+
+      //cancella tutti i log più vecchi di un mese
+      $this->query("delete from log_utenti where Data < DATE_ADD(NOW(), INTERVAL -30 DAY)")->rowCount();
+
       return $this->codifyLoginResult(1);
     }
     //"password errata"
