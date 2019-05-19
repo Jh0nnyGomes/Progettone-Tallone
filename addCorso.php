@@ -40,6 +40,7 @@
         </li>
         <!-- inserimento per administrator -->
         <li><a href="addPersonale.php">Aggiungi personale</a></li>
+        <li><a href="addSede.php">Aggiungi Sede</a></li>
       </ul>
         <ul class="logout-bar">
           <li>

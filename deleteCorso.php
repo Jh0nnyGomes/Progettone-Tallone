@@ -28,12 +28,12 @@
     $action = "Corso_details.php";
     $back = serialize($back);
   }
-
+/*
   echo "<form id='response' action='$action' method='POST'>
           <input type='hidden' name='response' value='addPerson'>
           <input type='hidden' name='msg' value='$back'>
         </form>
         <script type='text/javascript'>
           document.getElementById('response').submit();
-        </script>";
+        </script>";*/
 ?>

@@ -507,19 +507,20 @@ class InsertHandler extends DbHandler{
     }
   }
   public function addSede($nome){
-    //controllo nome Sede
-    $s = $this->query("SELECT Nome FROM sedi WHERE Nome = :name", ['name'=>$nome])->fetchColumn();
-    if ($s == $nome)
-      return 1;//Error: nome già esistente
-    //inserimento
+    //gestione errori
+    if ($nome == '')
+      return 'inserire un nome valido';
+    //controllo se esiste gia
+    $id = $this->sQuery("SELECT id FROM sedi WHERE Nome = :nome", ['nome'=>$nome])->fetchColumn();
+    if (null != $id)
+      return 'sede già esistente';
     $Field_val = ["Nome"=>$nome];
     if(!$this->insert("sedi", $Field_val))
-      return 2;//Error: generico
-    else{
-      $this->log->logAction("addS:".$nome);
-      return 0;//esito positivo
-    }
+      return 'impossibile aggiungere il record';
+    else
+      return 'operazione andata a buon fine';
   }
+
   public function deletePersonale($id){
     $result = $this->delete('personale', ['Id'=>$id]);
     if (isset($result['deleted']))

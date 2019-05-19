@@ -30,6 +30,7 @@
            if ($lv > 0){
              echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
              echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+             echo '<li><a href="addSede.php">Aggiungi Sede</a></li>';
            }
          ?>
        </ul>
