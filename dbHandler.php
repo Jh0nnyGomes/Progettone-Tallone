@@ -522,10 +522,12 @@ class InsertHandler extends DbHandler{
   }
 
   public function deletePersonale($id){
-    $result = $this->delete('personale', ['Id'=>$id]);
-    if (isset($result['deleted']))
+    //cancella tab personale
+    $r1 = $this->delete('personale', ['Id'=>$id]);
+    $r2 = $this->delete('corsi_personale', ['Id_Personale'=>$id]);
+    if (isset($r1['deleted']) && isset($r2['deleted']))
       $this->log->logAction('delP:'.$id);
-    return $result;
+    return $r1;
   }
   public function deleteCorso($id){
     $result = $this->delete('corsi', ['Id'=>$id]);
@@ -534,7 +536,7 @@ class InsertHandler extends DbHandler{
     return $result;
   }
   public function deleteSede($id){
-    $result = $this->delete('sedi', ['Id'=>$id]);
+    $result = $this->delete('sedi', ['id'=>$id]);
     if (isset($result['deleted']))
       $this->log->logAction('delS:'.$id);
     return $result;
@@ -759,16 +761,16 @@ class printHandler extends DataViewHandler{
       $pers['birth_place'] = $record["ComuneNascita"];
       $pers['birth_date'] = date("d/m/Y", strtotime($record["DataNascita"]));
       $pers['tot_ore'] = $record["Ore"];
-      $pers['mod1'] = date("d/m/Y", strtotime($record["Mod1"]));
-      $pers['mod2'] = date("d/m/Y", strtotime($record["Mod2"]));
-      $pers['mod3'] = date("d/m/Y", strtotime($record["Mod3"]));
-      $pers['agg1'] = date("d/m/Y", strtotime($record["Agg1"]));
-      $pers['agg2'] = date("d/m/Y", strtotime($record["Agg2"]));
+      $pers['mod1'] = (isset($record["Mod1"])) ? date("d/m/Y", strtotime($record["Mod1"])) : '';
+      $pers['mod2'] = (isset($record["Mod2"])) ? date("d/m/Y", strtotime($record["Mod2"])) : '';
+      $pers['mod3'] = (isset($record["Mod3"])) ? date("d/m/Y", strtotime($record["Mod3"])) : '';
+      $pers['agg1'] = (isset($record["Agg1"])) ? date("d/m/Y", strtotime($record["Agg1"])) : '';
+      $pers['agg2'] = (isset($record["Agg2"])) ? date("d/m/Y", strtotime($record["Agg2"])) : '';
       $pers['protocollo'] = $record["Protocollo"];
       $pers['id'] = $record["Id"];
       $pers['sede'] = $record["sede"];
       $pers['corso'] = $record["Id_Corso"];
-      $pers['date_proto'] = date("d/m/Y", strtotime($record["DateProtocollo"]));
+      $pers['date_proto'] = (isset($record["DateProtocollo"])) ? date("d/m/Y", strtotime($record["DateProtocollo"])) : '';
       $pers['formatori'] = '';
       //prepara i FORMATORI
       $f = $formatori[$record["Id_Corso"]];

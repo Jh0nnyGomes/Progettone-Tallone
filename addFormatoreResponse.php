@@ -13,7 +13,7 @@
 
   //preleva dati POST
   $cognome = $_POST["cognome"];
-
+  $from = $_POST["from"];
   //inserisce i dati e ritorna gli errori
   $h = new InsertHandler();
   $back = [];
@@ -28,7 +28,7 @@
   }
   $back['result'] = $h->codifyError($result);
 
-  echo "<form id='response' action='addCorso.php' method='POST'>
+  echo "<form id='response' action='$from' method='POST'>
           <input type='hidden' name='response' value='addFormatore'>
           <input type='hidden' name='msg' value='".serialize($back)."'>
         </form>

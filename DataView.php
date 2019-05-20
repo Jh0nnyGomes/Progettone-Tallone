@@ -17,7 +17,7 @@
         <ul class="navbar-list">
           <!-- DEBUG Home: TODO collegare alla pagina principale della scuola-->
           <li>
-            <a href="index.html">Home</a>
+            <a href="https://www.isisbisuschio.edu.it/.html">Home</a>
           </li>
           <li>
             <a href="PrintFilter.php">Stampa</a>
@@ -26,9 +26,10 @@
           <?php
             // admin
             if ($lv > 0){
-              echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-              echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
-              echo '<li><a href="addSede.php">Aggiungi Sede</a></li>';
+              echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>
+                    <li><a href="addCorso.php">Corsi</a></li>
+                    <li><a href="addSede.php">Sedi</a></li>
+                    <li><a href="addFormatori.php">Formatore</a></li>';
             }
           ?>
           <!-- SearchBar -->
@@ -104,6 +105,7 @@
                             <input type='hidden' name='Id' value='".$record['Id']."'>
                             <input type='hidden' name='src' value='$src'>
                             <input type='hidden' name='pag' value='$pag'>
+                            <input type='hidden' name='from' value='DataView.php'>
                             <input type='image' src='resources/img/trash.png'>
                           </form>
                         </td>

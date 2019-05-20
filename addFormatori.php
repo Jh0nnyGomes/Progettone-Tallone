@@ -41,7 +41,8 @@
         <!-- inserimento per administrator -->
         <li><a href="addPersonale.php">Aggiungi personale</a></li>
         <li><a href="addCorso.php">Aggiungi corso</a></li>
-        <li><a href="addFormatori.php">Formatore</a></li>
+        <li><a href="addSede.php">Sedi</a></li>
+
       </ul>
         <ul class="logout-bar">
           <li>
@@ -57,13 +58,11 @@
             <div>
                 <div>
                   <?php
-                    // TODO: metter il bottone 'addFormatoreBtn' a lato della select
-                    echo "<form action='addSedeResponse.php' method='post' id='addSform'>
-                              <input type='text' name='sede' placeholder='Nome Sede' value='".$tmp['sede']."' class='coursetxt'>
-                              </div>".
-                                '</div>
-                                <input type="submit" name="submit" value="Aggiungi Sede" class="addsede">
-                              </form>';
+                    echo "<form action='addFormatoreResponse.php' method='post' id='addFform'>
+                            <input type='text' name='cognome' placeholder='Cognome Formatore' value='".$tmp['cognome']."' class='coursetxt'>
+                            <input type='hidden' name='from' value='addFormatori.php'>".'
+                            <input type="submit" name="submit" value="Aggiungi Formatore" class="addCorso">
+                          </form>';
                   ?>
                 </div>
             </div>
@@ -73,22 +72,21 @@
     <table class='table'>
       <thead>
         <tr>
-          <th scope='col'>Sedi</th>
+          <th scope='col'>Formatori</th>
           <th scope='col'></th>
         </tr>
       <?php
-        //gestione utenti->aggiunta/modifica/eliminazione/reset account
         $in_handler = new InsertHandler();
-        $list = $in_handler->getSedi();
+        $list = $in_handler->getFormatori();
         if (isset($list) && sizeof($list) == 0)
-          echo "</table><div>nessuna sede trovata</div>";
+          echo "</table><div>nessun formatore trovato</div>";
         else
           foreach ($list as $u) {
             echo "<tr>
-                    <td>".$u['Nome']."</td>
+                    <td>".$u['Cognome']."</td>
                     <td>
-                    <form id='".$u["id"]."-deleteS' onclick='del(this)' method='post'>
-                      <input type='hidden' name='Id_Sede' value='".$u["id"]."'>
+                    <form id='".$u["Id"]."-deleteF' onclick='del(this)' method='post'>
+                      <input type='hidden' name='Id' value='".$u["Id"]."'>
                       <input type='image' src='resources/img/trash.png'>
                     </form>
                     </td>
@@ -99,8 +97,8 @@
     </div>
     <script>
     function del(form){
-      if(confirm("Cancellare la sede?")){
-        form.action='deleteSede.php';
+      if(confirm("Cancellare?")){
+        form.action='deleteFormatore.php';
         form.submit();
       } else form.focus();
     }
@@ -110,7 +108,6 @@
 
 <?php
   //riceve messaggi esito operazioni
-  $back = $_POST['msg'];
   if (isset($back))
-    echo "<script type='text/javascript'>alert('".$back."');</script>";
+    echo "<script type='text/javascript'>alert('".$back['result']."');</script>";
 ?>

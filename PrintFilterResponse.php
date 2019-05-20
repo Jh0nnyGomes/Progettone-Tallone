@@ -10,7 +10,6 @@
     $filepath = $pt_handler->saveSelect([$_POST['id']], "Certificato");
     if (isset($_POST['scope']) && $_POST['scope'] == 'download')
       $result = $pt_handler->download($filepath, "certificato");
-    
     echo "<form id='response' action='DataView.php' method='POST'>
             <input type='hidden' name='response' value='downloadOrPrint'>
             <input type='hidden' name='msg' value='$filepath'>
@@ -24,7 +23,6 @@
     $param = json_decode($_POST['ids'], true);
     if (count($param) > 0){
       $filepath = $pt_handler->saveSelect($param, "Certificato");
-
     }
       echo "<form id='response' action='PrintFilter.php' method='POST'>
               <input type='hidden' name='response' value='downloadOrPrint'>

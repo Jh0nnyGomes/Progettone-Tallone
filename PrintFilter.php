@@ -28,9 +28,10 @@
          <?php
          // admin
            if ($lv > 0){
-             echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-             echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
-             echo '<li><a href="addSede.php">Aggiungi Sede</a></li>';
+             echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>
+                   <li><a href="addCorso.php">Corsi</a></li>
+                   <li><a href="addSede.php">Sedi</a></li>
+                   <li><a href="addFormatori.php">Formatore</a></li>';
            }
          ?>
        </ul>
@@ -117,7 +118,6 @@
             'src' => $_POST['src']
           );
           $list = $pt_handler->filter($param);
-
           if (isset($list) && count($list) > 0){
             $str = "<br><table class='table'><thead><tr>";
             if($lv > 0){

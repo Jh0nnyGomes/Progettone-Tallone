@@ -41,6 +41,7 @@
         <!-- inserimento per administrator -->
         <li><a href="addPersonale.php">Aggiungi personale</a></li>
         <li><a href="addSede.php">Aggiungi Sede</a></li>
+        <li><a href="addFormatori.php">Formatore</a></li>
       </ul>
         <ul class="logout-bar">
           <li>
@@ -92,6 +93,7 @@
                               <input id="addFormatoriBtn" type="button" onclick="addFormatore()" value="Aggiungi Formatore" class="addtrainer">
                               <div id="addFormatori" style="display:none">
                                 <form id="addFormatoriForm" action="addFormatoreResponse.php" method="post">
+                                  <input type="hidden" name="from" value="addCorso.php">
                                   <input type="text" name="cognome" placeholder="Cognome Formatore" value="'.$tmp['cognome'].'" class="trainertxt">
                                   <input type="submit" value="Aggiungi Formatore" class="trainerbtn">
                                 </form>
@@ -103,8 +105,42 @@
             </div>
         </div>
     </div>
-
+    <table class='table'>
+      <thead>
+        <tr>
+          <th scope='col'>Corsi</th>
+          <th scope='col'></th>
+        </tr>
+      <?php
+        //gestione utenti->aggiunta/modifica/eliminazione/reset account
+        $in_handler = new InsertHandler();
+        $list = $in_handler->getCorsi();
+        if (isset($list) && sizeof($list) == 0)
+          echo "</table><div>nessun corso trovato</div>";
+        else
+          foreach ($list as $u) {
+            echo "<tr>
+                    <td>$u</td>
+                    <td>
+                    <form id='$u-deleteC' onclick='del(this)' method='post'>
+                      <input type='hidden' name='Id_Corso' value='$u'>
+                      <input type='hidden' name='from' value='addCorso.php'>
+                      <input type='image' src='resources/img/trash.png'>
+                    </form>
+                    </td>
+                  </tr>";
+          }
+      ?>
+    </table>
+    </div>
     <script>
+    function del(form){
+      if(confirm("Cancellare il Corso?")){
+        form.action='deleteCorso.php';
+        form.submit();
+      } else form.focus();
+    }
+
     var addingFormatore = false;
 
     function showList(){

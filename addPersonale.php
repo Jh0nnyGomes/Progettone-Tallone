@@ -36,8 +36,9 @@
               <?php
               //Moderator & admin
               if ($u->getAcLv() > 0)
-                echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
-                echo '<li><a href="addSede.php">Aggiungi Sede</a></li>';
+              echo '<li><a href="addCorso.php">Corsi</a></li>
+                    <li><a href="addSede.php">Sedi</a></li>
+                    <li><a href="addFormatori.php">Formatore</a></li>';
               ?>
           </ul>
           <ul class="logout-bar">

@@ -36,8 +36,10 @@
           <?php
             // admin
             if ($lv > 0){
-              echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>';
-              echo '<li><a href="addCorso.php">Aggiungi corso</a></li>';
+              echo '<li><a href="addPersonale.php">Aggiungi personale</a></li>
+                    <li><a href="addCorso.php">Corsi</a></li>
+                    <li><a href="addSede.php">Sedi</a></li>
+                    <li><a href="addFormatori.php">Formatore</a></li>';
             }
           ?>
         </ul>
